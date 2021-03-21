@@ -4,6 +4,7 @@ import LoginView from '../views/Login.vue';
 import ProfileView from '../views/Profile.vue';
 import LobbyBrowserView from '../views/LobbyBrowser.vue';
 import store from '../store';
+import ChessLobby from "@/views/ChessLobby";
 
 console.debug('client index.js');
 
@@ -14,6 +15,8 @@ const routes = [
   { path: '/login', component: LoginView },
   { path: '/profile', component: ProfileView },
   { path: '/lobbybrowser', component: LobbyBrowserView },
+  { path: '/chesslobby/:gameid', component: ChessLobby },
+
 ];
 
 const router = new VueRouter({
