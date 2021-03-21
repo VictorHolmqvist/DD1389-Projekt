@@ -7,7 +7,7 @@ class Database {
 
     constructor() {
         console.debug('new Database Object');
-        const databasePath = path.join(__dirname, '../server', 'db.sqlite');
+        const databasePath = path.join(__dirname, '.', 'db.sqlite');
         this.db = new SqliteDatabase(databasePath);
         this.createTables();
     }
@@ -15,10 +15,10 @@ class Database {
 
     async createTables() {
         // Create the User table
-        await this.db.run('CREATE TABLE IF NOT EXISTS User (name TEXT NOT NULL, password TEXT NOT NULL)', [], (err) => {
+        await this.db.run('CREATE TABLE IF NOT EXISTS User (name TEXT NOT NULL, password TEXT NOT NULL, UNIQUE(name))', [], (err) => {
             console.log('Created User table');
             if (err) {
-                console.error(err.message);
+                console.error(`Error creating User Table: ${err.message}`);
             }
         });
 
@@ -31,11 +31,11 @@ class Database {
             'gameOver INTEGER NOT NULL, ' +
             'draw INTEGER, ' +
             'winner INTEGER, ' +
-            'FOREIGN KEY (user1Id, user2Id) REFERENCES User (rowid))',
+            'FOREIGN KEY (user1Id, user2Id) REFERENCES User (rowid, rowid))',
             [], (err) => {
             console.log('Created Game table');
             if (err) {
-                console.error(err.message);
+                console.error(`Error creating Game Table: ${err.message}`);
             }
         });
     }
@@ -47,6 +47,19 @@ class Database {
             this.db.get(query, [userId], (err, row) => {
                 if (err || row === undefined) {
                     reject(new Error(`Failed fetching user with id: ${userId}`));
+                } else {
+                    resolve(new User(row.rowid, row.name, row.password));
+                }
+            });
+        });
+    }
+
+    async getUserByName(username) {
+        const query = 'SELECT rowid, * FROM User WHERE name = ?';
+        return new Promise((resolve, reject) => {
+            this.db.get(query, [username], (err, row) => {
+                if (err || row === undefined) {
+                    reject(new Error(`Failed fetching user with name: ${username}`));
                 } else {
                     resolve(new User(row.rowid, row.name, row.password));
                 }
@@ -90,10 +103,25 @@ class Database {
 
     }
 
+    async joinGame(gameId, userId) {
+        //TODO Check if the game already has two players?
+        const query = 'UPDATE Game set user2Id = ? WHERE rowid = ?';
+
+        return new Promise((resolve, reject) => {
+            this.db.run(query, [userId, gameId], (err) => {
+                if (err) {
+                    console.log(`Failed to join game with id: ${gameId} for player with id: ${userId}, err: ${err.message}`);
+                    reject(new Error(`Failed to join game with id: ${gameId} for player with id: ${userId}`));
+                } else {
+                    resolve('OK');
+                }
+            });
+        })
+    }
 
     //Returns all the games that a user can join(Only one connected player)
     async getJoinableGames() {
-        const query = 'SELECT rowid, * FROM Game WHERE user1Id = NULL or user2Id = NULL';
+        const query = 'SELECT rowid, * FROM Game WHERE user1Id is NULL or user2Id is NULL';
         const games = [];
 
         return new Promise((resolve, reject) => {
@@ -102,7 +130,9 @@ class Database {
                     console.error(err);
                     reject(new Error('Error fetching joinable games from database'));
                 } else {
+                    console.log('Has fetched joinable Games');
                     rows.forEach((row) => {
+                        console.log(row);
                         games.push(new Game(row.rowid,
                             row.user1Id,
                             row.user2Id,
