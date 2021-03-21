@@ -58,8 +58,8 @@ export default {
           return resp.json();
         }
       }).then((data) => {
-        this.name = data.username;
-        this.isAuthorized();
+        console.log(data);
+        this.$router.push(`/lobbybrowser`);
       })
         .catch(console.error);
       this.loginUsername = '';
