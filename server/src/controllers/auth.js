@@ -1,5 +1,8 @@
 const express = require('express');
 const db = require('../database.js');
+const sessionManager = require('../sessionManager.js');
+const { v4: uuidv4 } = require('uuid');
+
 
 const router = express.Router();
 
@@ -8,25 +11,20 @@ router.post('/authenticate', (req, res) => {
     db.getUserByName(req.body.username).then((user) => {
         if (req.body.password && req.body.password === user.password) {
             // Update the userID of the currently active session
-            // const authToken = uuidv4();
-            // req.session.authToken = authToken;
-            // console.log(`NEW TOKEN: ${authToken}`);
-            // sessionManager.addAuthenticatedUser(authToken, teacher, req.session.socketID);
-            // req.session.save((err) => {
-            //     if (err) {
-            //         console.error(err);
-            //     } else {
-            //         console.debug(`Saved authToken: ${req.session.authToken}`);
-            //         res.status(200).json({
-            //             username: user.name,
-            //         });
-            //     }
-            // });
-
-            res.status(200).json({
-                username: user.name,
+            const authToken = uuidv4();
+            req.session.authToken = authToken;
+            console.log(`NEW TOKEN: ${authToken}`);
+            sessionManager.addAuthenticatedUser(authToken, user);
+            req.session.save((err) => {
+                if (err) {
+                    console.error(err);
+                } else {
+                    console.debug(`Saved authToken: ${req.session.authToken}`);
+                    res.status(200).json({
+                        username: user.name,
+                    });
+                }
             });
-
         } else {
             res.sendStatus(401);
         }
@@ -37,15 +35,14 @@ router.post('/authenticate', (req, res) => {
 });
 
 router.get('/isAuthenticated', (req, res) => {
-    res.sendStatus(200)
-    // console.log(`Found Auth token: ${req.session.authToken}`);
-    // const user = sessionManager.getUser(req.session.authToken);
-    // console.log(`IsAuthenticated: ${user}`);
-    //
-    // res.status(200).json({
-    //     isAuthenticated: user !== null,
-    //     username: user !== null ? user.name : 'N/A',
-    // });
+    console.log(`Found Auth token: ${req.session.authToken}`);
+    const user = sessionManager.getUser(req.session.authToken);
+    console.log(`IsAuthenticated: ${user}`);
+
+    res.status(200).json({
+        isAuthenticated: user !== null,
+        username: user !== null ? user.name : 'N/A',
+    });
 });
 
 
