@@ -1,11 +1,10 @@
 <template>
   <div id="container">
     <h1>Lobby Browser</h1>
-    <p>Page where authenticated users can join a game, or create a new one</p>
-    <p>Users that are not authenticated will be redirected to /login</p>
-    <button v-on:click="openLobbyCreator()">Create Game</button>
+    <button class="green-button" v-on:click="openLobbyCreator()">Create Game</button>
 
-    <div class="row">
+    <h4 v-if="empty">There are currently no games to join. Create one!</h4>
+    <div v-if="!empty" class="row">
       <div class="well" v-for="lobby in lobbies" :key="lobby.gameId">
         <div class="row" style="text-align: center;">
           <h1>{{lobby.gameName}}</h1>
@@ -40,6 +39,17 @@ export default {
       lobbyNameTF: '',
     };
   },
+  computed: {
+    empty: function empt() {
+      if (!this.lobbies) {
+        return true;
+      }
+      if (this.lobbies.length === 0) {
+        return true;
+      }
+      return false;
+    },
+  },
   methods: {
     openLobbyCreator() {
       this.$refs.lobbyCreator.classList.remove('hidden');
@@ -49,7 +59,7 @@ export default {
       this.lobbyNameTF = '';
     },
     createGame() {
-      fetch('/lobby/creategame', {
+      fetch('/api/lobby/creategame', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +77,7 @@ export default {
     },
     joinGame(id) {
       console.log(`Join game with id: ${id}`);
-      fetch('/lobby/joingame', {
+      fetch('/api/lobby/joingame', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,7 +95,7 @@ export default {
     },
   },
   created() {
-    fetch('/lobby/alljoinable')
+    fetch('/api/lobby/alljoinable')
       .then((resp) => {
         if (!resp.ok) {
           throw new Error('Unexpected failure when loading timeslots');
