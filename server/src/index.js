@@ -57,6 +57,8 @@ const profileController = require('./controllers/profile.js');
 
 app.use('/api', authController.router);
 app.use('/lobby', lobbyController.router);
+app.use('/profile', profileController.router);
+
 
 
 // All chat endpoints require the user to be authenticated
