@@ -1,56 +1,46 @@
 const express = require('express');
-const db = require('../database.js');
+const sessionManager = require('../sessionManager.js');
+const lobbyHandler = require('../handlers/lobbyHandler.js');
 
 const router = express.Router()
 
 router.get('/alljoinable', async (req, res) => {
+    const user = sessionManager.getUser(req.session.authToken);
 
-    await db.getJoinableGames().then((lobbies) => {
-        console.log(`Joinable games: ${lobbies}`);
-        res.status(200).json({ list: lobbies });
+    await lobbyHandler.getJoinableGames(user).then((games) => {
+        res.status(200).json({ list: games });
     }).catch((err) => {
-        console.error(err.message);
-        res.status(500);
-    });
+        res.sendStatus(400);
+    })
+
 });
 
 
 router.post('/creategame', async (req, res) => {
-    //const teacherId = sessionManager.getUser(req.session.authToken).id;
-    const userId = 0;
+    const user = sessionManager.getUser(req.session.authToken);
+    const { lobbyName } = req.body;
+    console.log(`Create game with name: ${lobbyName}`);
 
-    db.addGame(userId).then((resp) => {
-        if (resp.status === 'OK') {
-            console.log('Successfully created new game.');
-            //sessionManager.newTimeSlot(resp.rowid);
-            res.sendStatus(200);
-        } else {
-            console.error('Failed creating new game: Database issue');
-            res.sendStatus(400);
-        }
-    }).catch(console.error);
+    await lobbyHandler.createGame(user, lobbyName).then(() => {
+        res.sendStatus(200);
+    }).catch((err) => {
+        res.sendStatus(400);
+    })
 });
 
 router.post('/joingame', async (req, res) => {
-    //const teacherId = sessionManager.getUser(req.session.authToken).id;
-    const userId = 0;
+    const user = sessionManager.getUser(req.session.authToken);
     const { gameId } = req.body;
     console.log(`Join game with id: ${gameId}`);
 
-    db.joinGame(gameId, userId).then((resp) => {
-        if (resp === 'OK') {
-            console.log(`Successfully joined game with id: ${gameId}`);
-            res.sendStatus(200);
-        } else {
-            console.error(`Failed joining game with id: ${gameId}, database issue.`);
-            res.sendStatus(400);
-        }
+    await lobbyHandler.joinGame(user, gameId).then(() => {
+        console.log(`Successfully joined game with id: ${gameId}`);
+        res.sendStatus(200);
     }).catch((err) => {
-        console.error(`Error joining game with id: ${gameId}, error: ${err.message}`)
-    });
+        console.error(`Failed joining game with id: ${gameId}, err: ${err.message}`);
+        res.sendStatus(400);
+    })
 });
-
-
 
 
 module.exports = { router };
