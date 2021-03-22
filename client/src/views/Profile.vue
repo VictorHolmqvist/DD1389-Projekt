@@ -39,7 +39,7 @@ export default {
   },
   methods: {
     getActiveGames() {
-      fetch('/profile/activegames')
+      fetch('/api/profile/activegames')
         .then((resp) => {
           if (!resp.ok) {
             throw new Error('Unexpected failure when loading timeslots');
@@ -53,7 +53,7 @@ export default {
         });
     },
     getGameHistory() {
-      fetch('/profile/gamehistory')
+      fetch('/api/profile/gamehistory')
         .then((resp) => {
           if (!resp.ok) {
             throw new Error('Unexpected failure when loading timeslots');
@@ -67,7 +67,7 @@ export default {
         });
     },
     joinGame(id) {
-      fetch('/lobby/joingame', {
+      fetch('/api/lobby/joingame', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,17 +84,11 @@ export default {
       });
     },
     logout() {
-      fetch('/profile/logout')
-        .then((resp) => {
-          if (resp.ok) {
-            this.$router.push('/login');
-          } else {
-            console.error('Logout failed');
-          }
-        })
-        .catch((err) => {
-          console.log(`Error logging out: ${err.message}`);
-        });
+      this.$store.dispatch('logout').then(() => {
+        this.$router.push('/login');
+      }).catch((err) => {
+        console.log(`Error logging out: ${err.message}`);
+      });
     },
   },
   created() {
