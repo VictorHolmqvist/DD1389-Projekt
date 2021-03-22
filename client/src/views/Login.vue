@@ -38,8 +38,15 @@
 <script>
 export default {
   name: 'Login',
+  data() {
+    return {
+      loginUsername: '',
+      loginPassword: '',
+      registerUsername: '',
+      registerPassword: '',
+    };
+  },
   methods: {
-
     login() {
       fetch('/api/authenticate', {
         method: 'POST',
@@ -59,7 +66,7 @@ export default {
         }
       }).then((data) => {
         console.log(data);
-        this.$router.push(`/lobbybrowser`);
+        this.$router.push('/lobbybrowser');
       })
         .catch(console.error);
       this.loginUsername = '';
