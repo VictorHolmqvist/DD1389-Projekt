@@ -12,11 +12,11 @@ console.debug('main.js');
 Vue.config.productionTip = false;
 
 (async () => {
-  // Find out if the user is already logged in
-  // const { isAuthenticated } = await fetch('/api/isAuthenticated')
-  //   .then(resp => resp.json())
-  //   .catch(console.error);
-  // store.commit('setIsAuthenticated', isAuthenticated);
+
+  const { isAuthenticated } = await fetch('/api/auth/isAuthenticated')
+    .then(resp => resp.json())
+    .catch(console.error);
+  store.commit('setIsAuthenticated', isAuthenticated);
 
   new Vue({
     router,
