@@ -35,9 +35,7 @@ router.post('/authenticate', (req, res) => {
 });
 
 router.get('/isAuthenticated', (req, res) => {
-    console.log(`Found Auth token: ${req.session.authToken}`);
     const user = sessionManager.getUser(req.session.authToken);
-    console.log(`IsAuthenticated: ${user}`);
 
     res.status(200).json({
         isAuthenticated: user !== null,
