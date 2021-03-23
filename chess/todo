@@ -1,5 +1,0 @@
-Ändrade namn på whitePlayer() och blackPlayer() till "get" innan för att inte ha samma namn som variablerna.
-
-
-Fortsätt på Tile-klassen
-Fixa till Piece-type-klassen

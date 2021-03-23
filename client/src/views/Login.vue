@@ -38,35 +38,59 @@
 <script>
 export default {
   name: 'Login',
-  data() {
-    return {
-      loginUsername: '',
-      loginPassword: '',
-      registerUsername: '',
-      registerPassword: '',
-    };
-  },
   methods: {
+
     login() {
-      const username = this.loginUsername;
-      const password = this.loginPassword;
-      this.$store.dispatch('login', { username, password }).then(() => {
+      fetch('/api/authenticate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: this.loginUsername,
+          password: this.loginPassword,
+        }),
+      }).then((resp) => {
+        if (!resp.ok) {
+          this.$refs.loginFailed.classList.remove('hidden');
+          throw new Error('Unauthorized');
+        } else {
+          return resp.json();
+        }
+      }).then((data) => {
+        console.log(data);
         this.$router.push('/lobbybrowser');
-      }).catch(() => {
-        this.$refs.loginFailed.classList.remove('hidden');
-      });
+      })
+        .catch(console.error);
+      this.loginUsername = '';
+      this.loginPassword = '';
     },
+
     register() {
-      const username = this.registerUsername;
-      const password = this.registerPassword;
-      this.$store.dispatch('register', { username, password }).then(() => {
-        this.$refs.register.classList.add('hidden');
-        this.$refs.registerSuccessful.classList.remove('hidden');
-      }).catch(() => {
-        this.$refs.register.classList.remove('hidden');
-        this.$refs.registerSuccessful.classList.add('hidden');
-        this.$refs.registerFailed.classList.remove('hidden');
-      });
+      console.log('register');
+      fetch('/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: this.registerUsername,
+          password: this.registerPassword,
+        }),
+      }).then((resp) => {
+        console.log('Register complete');
+        console.log(resp.status);
+        console.log(resp.status === 200);
+        if (resp.status === 200) {
+          console.log(this.$refs.register);
+          this.$refs.register.classList.add('hidden');
+          this.$refs.registerSuccessful.classList.remove('hidden');
+        } else {
+          this.$refs.register.classList.remove('hidden');
+          this.$refs.registerSuccessful.classList.add('hidden');
+          this.$refs.registerFailed.classList.remove('hidden');
+        }
+      }).catch(console.error);
       this.registerUsername = '';
       this.registerPassword = '';
     },
