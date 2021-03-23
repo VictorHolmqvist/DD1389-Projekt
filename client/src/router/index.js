@@ -4,7 +4,7 @@ import LoginView from '../views/Login.vue';
 import ProfileView from '../views/Profile.vue';
 import LobbyBrowserView from '../views/LobbyBrowser.vue';
 import store from '../store';
-import ChessLobby from "@/views/ChessLobby";
+import ChessLobby from '@/views/ChessLobby.vue';
 
 console.debug('client index.js');
 

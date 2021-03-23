@@ -59,7 +59,7 @@ export default {
         }
       }).then((data) => {
         console.log(data);
-        this.$router.push(`/lobbybrowser`);
+        this.$router.push('/lobbybrowser');
       })
         .catch(console.error);
       this.loginUsername = '';
