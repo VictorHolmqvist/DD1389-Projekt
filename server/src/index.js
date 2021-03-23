@@ -49,19 +49,16 @@ io.use(socketIOSession(session, {
 
 app.use(express.static(publicPath));
 
-// Bind REST controllers to /api
 const authController = require('./controllers/auth.js');
 const lobbyController = require('./controllers/lobby.js');
 const profileController = require('./controllers/profile.js');
+const requireAuth = require('./controllers/requireAuth.js')
+
+app.use('/api/auth', authController.router);
+app.use('/api/lobby', requireAuth, lobbyController.router);
+app.use('/api/profile', requireAuth, profileController.router);
 
 
-app.use('/api', authController.router);
-app.use('/lobby', lobbyController.router);
-
-
-// All chat endpoints require the user to be authenticated
-//app.use('/api/teacher', auth.requireAuth, teacher.router);
-//app.use('/api', timeSlot.router);
 
 // Init SessionManager
 // const sessionManager = require('./sessionManager.js');

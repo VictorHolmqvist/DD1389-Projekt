@@ -24,7 +24,8 @@ class Database {
 
         // Create the Game table
         await this.db.run('CREATE TABLE IF NOT EXISTS Game ' +
-            '(user1Id INTEGER NOT NULL, ' +
+            '(name TEXT NOT NULL, ' +
+            'user1Id INTEGER NOT NULL, ' +
             'user2Id INTEGER, ' +
             'currentPlayer INTEGER NOT NULL, ' +
             'gameState TEXT, ' +
@@ -82,8 +83,8 @@ class Database {
     }
 
 
-    async addGame(userId) {
-        const query = 'INSERT INTO Game VALUES (?, ?, ?, ?, ?, ?, ?)';
+    async addGame(userId, lobbyName) {
+        const query = 'INSERT INTO Game VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
 
         return new Promise((resolve, reject) => {
             const rowAdded = function ra(err) {
@@ -98,7 +99,7 @@ class Database {
                     });
                 }
             };
-            this.db.run(query, [userId, null, 0, '', 0, 0, null], rowAdded);
+            this.db.run(query, [lobbyName, userId, null, 0, '', 0, 0, null], rowAdded);
         });
 
     }
@@ -121,7 +122,10 @@ class Database {
 
     //Returns all the games that a user can join(Only one connected player)
     async getJoinableGames() {
-        const query = 'SELECT rowid, * FROM Game WHERE user1Id is NULL or user2Id is NULL';
+        const query = 'SELECT Game.rowid as gameId, ' +
+            'Game.name as gameName, ' +
+            'User.name as opponentName, * FROM Game ' +
+            'INNER JOIN User on Game.user1Id = User.rowid WHERE Game.user2Id is NULL';
         const games = [];
 
         return new Promise((resolve, reject) => {
@@ -133,8 +137,9 @@ class Database {
                     console.log('Has fetched joinable Games');
                     rows.forEach((row) => {
                         console.log(row);
-                        games.push(new Game(row.rowid,
-                            row.user1Id,
+                        games.push(new Game(row.gameId,
+                            row.gameName,
+                            row.opponentName,
                             row.user2Id,
                             row.currentPlayer,
                             row.gameState,
@@ -149,13 +154,84 @@ class Database {
         });
     }
 
+    async getActiveGamesForUser(userId) {
+        const query = 'SELECT ' +
+            'game.rowid as gameId, ' +
+            'game.name as gameName, ' +
+            'user1.name as user1Name, ' +
+            'user2.name as user2Name, ' +
+            '* FROM Game as game ' +
+            'LEFT JOIN User as user1 on game.user1Id = user1.rowid ' +
+            'LEFT JOIN User as user2 on game.user2Id = user2.rowid ' +
+            'WHERE ' +
+            'game.user1Id = ? ' +
+            'or ' +
+            'game.user2Id = ? ' +
+            'AND ' +
+            'game.gameOver = 0';
+        const games = [];
 
+        return new Promise((resolve, reject) => {
+            this.db.all(query, [userId, userId], (err, rows) => {
+                if (err) {
+                    console.error(err);
+                    reject(new Error('Error fetching active games from database'));
+                } else {
+                    console.log('Has fetched active Games');
+                    rows.forEach((row) => {
+                        console.log(row);
+                        games.push(new Game(row.gameId,
+                            row.gameName,
+                            {id: row.user1Id, name: row.user1Name},
+                            {id: row.user2Id, name: row.user2Name},
+                            row.currentPlayer,
+                            row.gameState,
+                            row.gameOver,
+                            row.draw,
+                            row.winner
+                        ));
+                    });
+                    resolve(games);
+                }
+            });
+        });
+    }
 
+    async getGameHistoryForUser(userId) {
+        const query = 'SELECT rowid, * FROM Game ' +
+            'WHERE ' +
+            'user1Id = ? ' +
+            'or ' +
+            'user2Id = ? ' +
+            'AND ' +
+            'gameOver = 1';
+        const games = [userId, userId];
 
-
-
-
-
+        return new Promise((resolve, reject) => {
+            this.db.all(query, [], (err, rows) => {
+                if (err) {
+                    console.error(err);
+                    reject(new Error('Error fetching active games from database'));
+                } else {
+                    console.log('Has fetched active Games');
+                    rows.forEach((row) => {
+                        console.log(row);
+                        games.push(new Game(row.rowid,
+                            row.name,
+                            row.user1Id,
+                            row.user2Id,
+                            row.currentPlayer,
+                            row.gameState,
+                            row.gameOver,
+                            row.draw,
+                            row.winner
+                        ));
+                    });
+                    resolve(games);
+                }
+            });
+        });
+    }
 }
 
 
