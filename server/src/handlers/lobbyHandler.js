@@ -1,6 +1,7 @@
 const db = require('../database.js');
 const JoinableGameResultModel = require('../models/resultModels/joinableGameResultModel.js');
 const ActiveGameResultModel = require('../models/resultModels/activeGameResultModel.js');
+const socketEventHandler = require('./socketEventHandler.js');
 
 class LobbyHandler {
 
@@ -71,6 +72,7 @@ class LobbyHandler {
             db.addGame(user.id, lobbyName).then((resp) => {
                 if (resp.status === 'OK') {
                     console.log('Successfully created new game.');
+                    socketEventHandler.gameCreated(resp.rowid);
                     resolve();
                 } else {
                     console.error('Failed creating new game: Database issue');

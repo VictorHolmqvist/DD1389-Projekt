@@ -120,6 +120,33 @@ class Database {
         })
     }
 
+    async getGameById(gameId) {
+        const query = 'SELECT Game.rowid as gameId, ' +
+            'Game.name as gameName, ' +
+            'User.name as opponentName, * FROM Game ' +
+            'INNER JOIN User on Game.user1Id = User.rowid WHERE gameId = ?';
+
+        return new Promise((resolve, reject) => {
+            this.db.get(query, [gameId], (err, row) => {
+                if (err || row === undefined) {
+                    reject(new Error(`Failed fetching game with id: ${gameId}`));
+                } else {
+                    resolve(new Game(row.gameId,
+                        row.gameName,
+                        row.opponentName,
+                        row.user2Id,
+                        row.currentPlayer,
+                        row.gameState,
+                        row.gameOver,
+                        row.draw,
+                        row.winner
+                    ));
+                }
+            });
+        });
+
+    }
+
     //Returns all the games that a user can join(Only one connected player)
     async getJoinableGames() {
         const query = 'SELECT Game.rowid as gameId, ' +

@@ -59,30 +59,31 @@ app.use('/api/lobby', requireAuth, lobbyController.router);
 app.use('/api/profile', requireAuth, profileController.router);
 
 
+//Setup SocketManager
+const socketManager = require('./socketManager.js');
+const sessionManager = require('./sessionManager.js');
 
-// Init SessionManager
-// const sessionManager = require('./sessionManager.js');
-//
-// sessionManager.setIo(io);
+socketManager.setIo(io);
 
 // Handle connected socket.io sockets
-// io.on('connection', (socket) => {
-//     // This function serves to bind socket.io connections to user models
-//
-//     if (socket.handshake.session.authToken
-//         && sessionManager.getUser(socket.handshake.session.authToken) !== null
-//     ) {
-//         // If the current user already logged in and then reloaded the page
-//         sessionManager.updateUserSocket(socket.handshake.session.authToken, socket);
-//     } else {
-//         socket.join('public');
-//         socket.handshake.session.socketID = sessionManager.addUnregisteredSocket(socket);
-//         socket.handshake.session.save((err) => {
-//             if (err) console.error(err);
-//             else console.debug(`Saved socketID: ${socket.handshake.session.socketID}`);
-//         });
-//     }
-// });
+io.on('connection', (socket) => {
+
+    const authToken = socket.handshake.session.authToken;
+
+    if (authToken
+        && sessionManager.getUser(authToken) !== null
+    ) {
+        // If the current user already logged in and then reloaded the page
+        socketManager.updateUserSocket(authToken, socket);
+    } else {
+        //The user is not authenticated. Assign a new socketId.
+        socket.handshake.session.socketID = socketManager.addUnregisteredSocket(socket);
+        socket.handshake.session.save((err) => {
+            if (err) console.error(err);
+            else console.debug(`Saved socketID: ${socket.handshake.session.socketID}`);
+        });
+    }
+});
 
 // Start server
 httpServer.listen(port, () => {

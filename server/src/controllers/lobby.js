@@ -1,11 +1,13 @@
 const express = require('express');
 const sessionManager = require('../sessionManager.js');
 const lobbyHandler = require('../handlers/lobbyHandler.js');
+const socketManager = require('../socketManager.js');
 
 const router = express.Router()
 
 router.get('/alljoinable', async (req, res) => {
     const user = sessionManager.getUser(req.session.authToken);
+    socketManager.joinRoom('lobbyBrowser', req.session.authToken);
 
     await lobbyHandler.getJoinableGames(user).then((games) => {
         res.status(200).json({ list: games });

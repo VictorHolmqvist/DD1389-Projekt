@@ -6,7 +6,6 @@ class SessionManager {
 
     addAuthenticatedUser(token, user) {
         this.authenticatedUsers[token] = user;
-
     }
 
     getUser(token) {

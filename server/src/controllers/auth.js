@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../database.js');
 const sessionManager = require('../sessionManager.js');
+const socketManager = require('../socketManager.js');
 const { v4: uuidv4 } = require('uuid');
 
 
@@ -10,11 +11,17 @@ const router = express.Router();
 router.post('/authenticate', (req, res) => {
     db.getUserByName(req.body.username).then((user) => {
         if (req.body.password && req.body.password === user.password) {
+
             // Update the userID of the currently active session
             const authToken = uuidv4();
             req.session.authToken = authToken;
             console.log(`NEW TOKEN: ${authToken}`);
             sessionManager.addAuthenticatedUser(authToken, user);
+
+            if (req.session.sockedId) {
+                socketManager.assignUnregisteredSocket(req.session.sockedId, authToken)
+            }
+
             req.session.save((err) => {
                 if (err) {
                     console.error(err);

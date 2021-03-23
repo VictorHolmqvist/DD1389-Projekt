@@ -73,6 +73,7 @@ export default {
         } else {
           console.error('Failed creating new Game');
         }
+        this.closeLobbyCreator();
       }).catch(console.error);
     },
     joinGame(id) {
@@ -107,6 +108,12 @@ export default {
         console.log(data.list);
         this.lobbies = data.list;
       });
+
+    this.socket = this.$root.socket;
+    this.socket.on('new', (game) => {
+      console.log('NEW GAME');
+      this.lobbies = [...this.lobbies, game];
+    });
   },
 };
 </script>
