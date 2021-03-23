@@ -1,0 +1,8 @@
+Ändrade namn på whitePlayer() och blackPlayer() till "get" innan för att inte ha samma namn som variablerna.
+
+Casta dam i promovering
+Casta kung i Player-klassen
+
+Kolla så att variabelnamn !== metodnamn
+
+Connecta chessgame till spellogiken
