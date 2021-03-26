@@ -16,6 +16,9 @@
           </p>
           <p>My Turn: {{game.myTurn}}</p>
           <button v-on:click="joinGame(game.id)">Join Game</button>
+          <div class = "boardPreview" >
+            <chessboard :fen="fen" id = "board "/>
+          </div>
         </div>
       </div>
     </div>
@@ -28,13 +31,18 @@
 </template>
 
 <script>
+import { chessboard } from 'vue-chessboard';
 
 export default {
+  components: {
+    chessboard,
+  },
   name: 'Profile',
   data() {
     return {
       activeGames: [],
       gameHistory: [],
+      fen: '5rr1/3nqpk1/p3p2p/Pp1pP1pP/2pP1PN1/2P1Q3/2P3P1/R4RK1 b - f3 0 28',
     };
   },
   methods: {
@@ -136,6 +144,21 @@ h1 {
 
 .editor timeselector {
   width: 50%;
+}
+
+.boardPreview {
+  pointer-events: none;
+  padding: 37px;
+  margin: auto;
+  left: 40%;
+  top: 30%;
+  text-align: right;
+  width: 400px;
+  height: 400px;
+}
+
+#board {
+  transform: scale(0.5, 0.5);
 }
 
 </style>

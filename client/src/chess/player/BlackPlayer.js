@@ -20,3 +20,5 @@ class BlackPlayer extends Player {
     return 'BLACK';
   }
 }
+
+module.exports = BlackPlayer;

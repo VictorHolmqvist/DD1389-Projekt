@@ -1,3 +1,4 @@
+const PieceColor = require("@/chess/pieces/PieceColor");
 
 class WhitePlayer extends Player {
   constructor(board, whiteStandardLegalMoves, blackStandardLegalMoves) {
@@ -20,3 +21,5 @@ class WhitePlayer extends Player {
     return 'WHITE';
   }
 }
+
+module.exports = WhitePlayer;

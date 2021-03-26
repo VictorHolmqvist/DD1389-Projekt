@@ -48,3 +48,5 @@ PieceColor.choosePlayer = (whitePlayer, blackPlayer, pieceColor) => {
       return blackPlayer;
   }
 };
+
+module.exports = PieceColor;

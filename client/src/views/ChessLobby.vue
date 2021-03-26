@@ -2,88 +2,104 @@
 
   <div >
     <div class = "container">
-      <h1>Lobby {{gameId}}</h1>
-        <div v-for = "row in 8" :key="row" class = "cell">
-          <div v-for = "column in 8" :key="column" class = "cell" v-bind:id =
-            decideColor(row,column)
-               @click = "move(8*row+column-8)">
-            </div>
+      <div class = "information">
+        <h1>Lobby {{gameId}}</h1>
+        <h2> Opponent:  </h2>
+        <h3> Turn: {{ positionInfo.turn }} </h3>
+        <h3> Turns: {{ turns }} </h3>
+        <button id = "giveUpButton"> Give up </button>
+        <button v-on:click = "setClickable" > clickable </button>
+        <button v-on:click = "setNotClickable()" > notClickable </button>
+        <button v-on:click = "loadFromFen()" > LoadFromFen </button>
         </div>
+      <div id = "chessboard" class = "chessboard">
+        <chessboard :fen="fen" @onMove="move" id = "board "/>
+      </div>
     </div>
-
   </div>
-
 </template>
 
 <script>
-// const chessGame = require('./chess/ChessGame.js');
+
+import { chessboard } from 'vue-chessboard';
+// import 'vue-chessboard/dist/vue-chessboard.css';
+
 export default {
   name: 'ChessLobby',
+  components: {
+    chessboard,
+  },
   data() {
     return {
+      // turn is true if it is the players turn
+      turn: true,
+      // fen holds the fen string for the board. It updates every move.
+      // standard fen
+      fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      clickable: 'clickable',
+      turns: -1,
+      positionInfo: '',
       gameId: this.$route.params.gameid,
     };
   },
-  mounted() {
-  },
   methods: {
-    move(tileId) {
-      console.log(tileId);
+    move(data) {
+      this.turns = this.turns + 1;
+      this.fen = data.fen;
+      this.positionInfo = data;
+      console.log(this.fen);
     },
-    decideColor(row, column) {
-      const tileId = 8 * row + column - 8;
-      if (row === 1 || row === 3 || row === 5 || row === 7) {
-        return (tileId % 2 === 0 ? 'whiteCell' : 'blackCell');
-      } return (tileId % 2 === 0 ? 'blackCell' : 'whiteCell');
+    setClickable() {
+      $("#chessboard").css("pointer-events","auto");
+      console.log('clickable');
     },
+    setNotClickable() {
+      $("#chessboard").css("pointer-events","none");
+      console.log('not clickable');
+    },
+    loadFromFen(){
+      this.fen = 'rnbqkbnr/pp1ppppp/8/2p5/1P6/8/P1PPPPPP/RNBQKBNR w KQkq c6 0 2'
+    }
   },
 };
 </script>
 
 <style scoped>
-:root {
-  --height: 0;
-  --width: 0;
-}
-td:hover {
-  background-color: blanchedalmond;
-}
-body {
-  display: flex;
-  justify-content: center;
+
+.chessboard {
+  padding: 37px;
+  margin: auto;
+  left: 40%;
+  top: 30%;
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: grey;
 }
 
 .container {
-  border-radius: 25px;
-  margin: 50px;
+  background: darkgrey;
+  position: absolute;
   padding: 50px;
-  background: bisque;
-}
-.title {
-  text-align: center;
-}
-
-.cell {
-  float: left;
-  text-align: center;
-  font-size: 60px;
-  height: 70px;
-  width: 70px;
-  background: bisque;
-  margin-right: -1px;
-  margin-top: -1px;
-  padding: 0;
-}
-.cell:hover {
-  background: blanchedalmond;
+  top: 10%;
+  left: 10%;
+  width: 1500px;
+  height: 700px;
 }
 
-#blackCell{
-  background: #B58862;
+.information {
+  margin: 50px;
+  position: center;
 }
 
-#whiteCell{
-  background: #F0D9B5;
+#giveUpButton {
+  margin-top: 10px;
+}
+
+#board {
+  position: center;
+  left: 50%;
+  top: 50%;
 }
 
 </style>
