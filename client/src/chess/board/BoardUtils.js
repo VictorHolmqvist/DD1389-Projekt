@@ -17,31 +17,26 @@ BoardUtils.EIGHTH_ROW = BoardUtils.initRow(56);
 BoardUtils.NUM_TILES = 64;
 BoardUtils.NUM_TILES_PER_ROW = 8;
 
-BoardUtils.isValidTileCoordinate = (coordinate) => {
-    return coordinate >= 0 && coordinate < 64;
+BoardUtils.isValidTileCoordinate = coordinate => coordinate >= 0 && coordinate < 64;
+
+// fill up the given column with true values
+BoardUtils.initColumn = (columnNumber) => {
+  const column = [];
+  do {
+    column[columnNumber] = true;
+    columnNumber += 8;
+  } while (columnNumber < 64);
+  return column;
 };
 
-//fill up the given column with true values
-BoardUtils.initColumn = (columnNumber) => {
-    const column = [];
-    do {
-        column[columnNumber] = true;
-        columnNumber += 8;
-
-    } while (columnNumber < 64);
-    return column;
-}
-
-//fill up the given row with true values
+// fill up the given row with true values
 BoardUtils.initRow = (rowNumber) => {
-    const row = [];
-    do {
-        row[rowNumber] = true;
-        rowNumber ++;
-    } while (rowNumber % BoardUtils.NUM_TILES_PER_ROW !== 0);
-    return row;
-}
+  const row = [];
+  do {
+    row[rowNumber] = true;
+    rowNumber++;
+  } while (rowNumber % BoardUtils.NUM_TILES_PER_ROW !== 0);
+  return row;
+};
 
-BoardUtils.isValidTileCoordinate = (coordinate) => {
-    return coordinate >= 0 && coordinate < 64;
-}
+BoardUtils.isValidTileCoordinate = coordinate => coordinate >= 0 && coordinate < 64;

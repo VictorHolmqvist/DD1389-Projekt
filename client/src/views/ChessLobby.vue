@@ -1,18 +1,169 @@
 <template>
-<h1>Lobby {{gameId}}</h1>
+
+  <div >
+    <div class = "container">
+      <div class = "information">
+        <h1>Lobby {{ gameId }}</h1>
+        <h2> Opponent: {{ opponent }} </h2>
+        <h3> You are: {{ color }} </h3>
+        <h3> Turn: {{ turn }} </h3>
+        <h3> Turns: {{ turns }} </h3>
+        <button id = "giveUpButton"> Give up </button>
+        <button v-on:click = "setClickable" > clickable </button>
+        <button v-on:click = "setNotClickable()" > notClickable </button>
+        <button v-on:click = "loadFromFen()" > LoadFromFen </button>
+        </div>
+      <div id = "chessboard" class = "chessboard">
+        <chessboard :fen="fen" @onMove="move" id = "board "/>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
+
+import { chessboard } from 'vue-chessboard';
+// import 'vue-chessboard/dist/vue-chessboard.css';
+
 export default {
   name: 'ChessLobby',
+  components: {
+    chessboard,
+  },
   data() {
     return {
+      // holds what color the cient is. The creator of the room is black
+      color: 'white',
+      opponent: null,
+      // turn is either 0 or 1. 0 == black. 1 == white
+      turn: null,
+      // fen holds the fen string for the board. It updates every move.
+      // standard fen
+      fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      turns: 0,
       gameId: this.$route.params.gameid,
     };
+  },
+  mounted() {
+    fetch('---/api/Gamedata---'+this.gameId)
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Unexpected failure when loading game data');
+        }
+        return resp.json();
+      })
+      .catch(console.error)
+      .then((data) => {
+        // tjena Hannes
+        // INT color = 0 eller 1.    0 = black. 1 = white.
+        // color håller den färg som klienten är
+        this.color = data.color
+        // INT turn =  0 eller 1     0 = black. 1 = white.
+        this.turn = data.turn;
+        // STRING fen = exempel: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+        // fen håller game state och skickas mellan klient och server när drag genomförs
+        this.fen = data.fen;
+        // INT turns. Antal omgångar som genomförs.
+        // när båda spelarna genomförs ett drag var ökas turns med +1
+        this.turns = data.turns;
+        // STRING opponent. Håller clientens motståndare.
+        this.opponent = data.opponent;
+
+        if (this.turn === this.color) {
+         this.setClickable();
+        }
+      });
+  },
+  created() {
+    this.socket = this.$root.socket;
+    // listen on when opponent has made a move
+    this.socket.on('---GAMEUPDATE---', (data) => {
+      console.log('GAME UPDATE');
+      this.fen = data.fen;
+      this.turns = data.turns;
+      this.setClickable()
+    });
+  },
+  methods: {
+    move(data) {
+      this.fen = data.fen;
+      // lägg till if lastmove was this players move.
+      // typ if (data.turn === this.color)
+      console.log(data);
+      this.setNotClickable();
+      console.log(this.fen);
+      fetch('/api/---MADEGAMEMOVE---', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fen: this.fen,
+          gameId: this.gameId,
+        }),
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Unexpected failure when sending game move');
+        } else {
+          console.log('Successfully sent game move')
+        }
+      });
+    },
+    setClickable() {
+      $("#chessboard").css("pointer-events","auto");
+      console.log('clickable');
+    },
+    setNotClickable() {
+      $("#chessboard").css("pointer-events","none");
+      console.log('not clickable');
+    },
+    loadFromFen(){
+      this.fen = 'rnbqkbnr/pp1ppppp/8/2p5/1P6/8/P1PPPPPP/RNBQKBNR w KQkq c6 0 2'
+    }
   },
 };
 </script>
 
 <style scoped>
+
+.chessboard {
+  padding: 37px;
+  margin: auto;
+  left: 40%;
+  top: 30%;
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: grey;
+}
+
+.container {
+  background: darkgrey;
+  position: absolute;
+  padding: 50px;
+  top: 10%;
+  left: 10%;
+  width: 1500px;
+  height: 700px;
+}
+
+.information {
+  margin: 50px;
+  position: center;
+}
+
+#giveUpButton {
+  margin-top: 10px;
+}
+
+#board {
+  position: center;
+  left: 50%;
+  top: 50%;
+}
+
+#chessboard {
+  pointer-events: none;
+}
 
 </style>
