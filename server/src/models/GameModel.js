@@ -1,5 +1,5 @@
 
-class Game {
+class GameModel {
     constructor(id, name, user1, user2, currentPlayer, gameState, gameOver, draw, winner) {
         this.id = id;
         this.name = name;
@@ -13,4 +13,4 @@ class Game {
     }
 }
 
-module.exports = Game;
+module.exports = GameModel;
