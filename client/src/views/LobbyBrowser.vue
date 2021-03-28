@@ -8,10 +8,8 @@
       <div class="well" v-for="lobby in lobbies" :key="lobby.gameId">
         <div class="row" style="text-align: center;">
           <h1>{{lobby.gameName}}</h1>
-          <h2>{{lobby.gameId}}</h2>
-          <p>
-            <span>Opponent: {{ lobby.opponentName }}</span>
-          </p>
+          <p>GameId: {{lobby.gameId}}</p>
+          <p>Opponent: {{ lobby.opponentName }}</p>
           <button v-on:click="joinGame(lobby.gameId)">Join Game</button>
         </div>
       </div>
@@ -50,6 +48,14 @@ export default {
       return false;
     },
   },
+  beforeRouteEnter(to, from, next) {
+    console.log(`Navigated from: ${from.path} to ${to.path}`);
+    if (to.path === '/lobbybrowser' && from.path !== '/login') {
+      next(vm => vm.getAllJoinable());
+    } else {
+      next();
+    }
+  },
   methods: {
     openLobbyCreator() {
       this.$refs.lobbyCreator.classList.remove('hidden');
@@ -59,60 +65,63 @@ export default {
       this.lobbyNameTF = '';
     },
     createGame() {
-      fetch('/api/lobby/creategame', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          lobbyName: this.lobbyNameTF,
-        }),
-      }).then((resp) => {
-        if (resp.status === 200) {
-          console.log('Successfully created game');
-        } else {
-          console.error('Failed creating new Game');
-        }
-        this.closeLobbyCreator();
-      }).catch(console.error);
+      this.$http.post('/api/lobby/creategame', { lobbyName: this.lobbyNameTF })
+        .then((resp) => {
+          if (resp.status === 200) {
+            console.log('Successfully created game');
+          } else {
+            console.error('Failed creating new Game');
+          }
+          this.closeLobbyCreator();
+        }).catch((err) => {
+          console.error(err.message);
+        });
     },
     joinGame(id) {
       console.log(`Join game with id: ${id}`);
-      fetch('/api/lobby/joingame', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          gameId: id,
-        }),
-      }).then((resp) => {
-        if (resp.ok) {
-          this.$router.push(`/chesslobby/${id}`);
-        } else {
-          console.log(`Failed joining game with id: ${id}`);
+      this.$http.post('/api/lobby/joingame', { gameId: id })
+        .then((resp) => {
+          if (resp.ok) {
+            this.$router.push(`/chesslobby/${id}`);
+          } else {
+            console.log(`Failed joining game with id: ${id}`);
+          }
+        });
+    },
+    getAllJoinable() {
+      console.log('alljoinable');
+      this.$http.get('/api/lobby/alljoinable').then((resp) => {
+        console.log('alljoinable then');
+        if (!resp.ok) {
+          console.log('LobbyBrowser: failed loading joinable games, status is not ok');
         }
+        const respJson = resp.json();
+        console.log(`resp.json = ${respJson}`);
+        return respJson;
+      }).then((data) => {
+        console.log(data.list);
+        this.lobbies = data.list;
+      }).catch((err) => {
+        console.log(`LobbyBrowser: failed loading joinable games: ${err.message}, ${err.status}`);
       });
     },
   },
   created() {
-    fetch('/api/lobby/alljoinable')
-      .then((resp) => {
-        if (!resp.ok) {
-          throw new Error('Unexpected failure when loading timeslots');
-        }
-        return resp.json();
-      })
-      .catch(console.error)
-      .then((data) => {
-        console.log(data.list);
-        this.lobbies = data.list;
-      });
-
+    this.getAllJoinable();
     this.socket = this.$root.socket;
+
     this.socket.on('new', (game) => {
       console.log('NEW GAME');
       this.lobbies = [...this.lobbies, game];
+    });
+
+    this.socket.on('removed', (gameId) => {
+      console.log('REMOVED');
+      this.lobbies.forEach((game, index) => {
+        if (game.gameId === gameId) {
+          this.lobbies.splice(index, 1);
+        }
+      });
     });
   },
 };
@@ -123,8 +132,19 @@ export default {
   text-align: center;
 }
 
+.well {
+  padding: 10px;
+  margin: 5px auto;
+}
+
+.row {
+  margin: 0px auto;
+  width: 600px;
+}
+
 .row h1 {
-  margin: 0;
+  font-size: 25px;
+  margin: 0 0 10px;
 }
 
 .hidden {

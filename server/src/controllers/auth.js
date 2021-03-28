@@ -18,8 +18,9 @@ router.post('/authenticate', (req, res) => {
             console.log(`NEW TOKEN: ${authToken}`);
             sessionManager.addAuthenticatedUser(authToken, user);
 
-            if (req.session.sockedId) {
-                socketManager.assignUnregisteredSocket(req.session.sockedId, authToken)
+            if (req.session.socketID) {
+                console.log(`/authenticate found socketId: ${req.session.socketID}`)
+                socketManager.assignUnregisteredSocket(req.session.socketID, authToken)
             }
 
             req.session.save((err) => {
@@ -28,11 +29,12 @@ router.post('/authenticate', (req, res) => {
                 } else {
                     console.debug(`Saved authToken: ${req.session.authToken}`);
                     res.status(200).json({
-                        username: user.name,
+                        username: user.name
                     });
                 }
             });
         } else {
+            console.log('login failed');
             res.sendStatus(401);
         }
     }).catch((err) => {

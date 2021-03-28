@@ -6,6 +6,7 @@ class ActiveGameResultModel {
         this.opponentName = opponentName;
         this.myTurn = myTurn;
         this.gameState = gameState;
+        this.gameOver = false;
     }
 
 }

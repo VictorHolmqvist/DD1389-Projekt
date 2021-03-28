@@ -11,8 +11,6 @@ class LobbyHandler {
             let joinableGames = [];
 
             db.getJoinableGames().then((games) => {
-                console.log(`Joinable games: ${games}`);
-
                 games.forEach((game) => {
                     joinableGames.push(new JoinableGameResultModel(game.id, game.name, game.user1))
                 });
@@ -33,7 +31,6 @@ class LobbyHandler {
                 console.log(`Active games for user with id: ${user.id} games: ${games}`);
 
                 games.forEach((game) => {
-                    console.log(game)
                     //Get the name of the opponent
                     let opponentName = 'Looking for opponent...';
                     if (game.user1.id && game.user1.id !== user.id) {
@@ -91,6 +88,7 @@ class LobbyHandler {
             db.joinGame(gameId, user.id).then((resp) => {
                 if (resp === 'OK') {
                     console.log(`Successfully joined game with id: ${gameId}`);
+                    socketEventHandler.playerJoinedGame(gameId);
                     resolve();
                 } else {
                     console.error(`Failed joining game with id: ${gameId}, database issue.`);

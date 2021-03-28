@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app-2">
     <nav class="navbar navbar-default navbar-inverse navbar-static-top" role="navigation">
       <div class="container">
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -37,7 +37,9 @@
       </div>
       <!-- /.container-fluid -->
     </nav>
-    <router-view></router-view>
+    <keep-alive>
+      <router-view></router-view>
+    </keep-alive>
   </div>
 </template>
 
@@ -46,7 +48,10 @@ console.debug('App.vue');
 export default {
   methods: {
     redirect(target) {
-      this.$router.push(target);
+      if (this.$route.path !== target) {
+        console.log('App.vue redir');
+        this.$router.push(target);
+      }
     },
   },
 };

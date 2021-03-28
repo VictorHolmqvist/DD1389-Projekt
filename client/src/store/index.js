@@ -13,12 +13,15 @@ export default new Vuex.Store({
   mutations: {
     setIsAuthenticated(state, isAuthenticated) {
       state.isAuthenticated = isAuthenticated;
+      console.log(`setIsAuthenticated: ${isAuthenticated}`);
     },
     authSuccess(state, resp) {
+      console.log(`authSuccess: ${resp}`);
       state.isAuthenticated = true;
       state.username = resp.username;
     },
     authFailed(state) {
+      console.log('authFailed');
       state.isAuthenticated = false;
       state.username = '';
     },
@@ -29,6 +32,7 @@ export default new Vuex.Store({
   },
   actions: {
     login({ commit }, user) {
+      console.log('login');
       return new Promise((resolve, reject) => {
         fetch('/api/auth/authenticate', {
           method: 'POST',
@@ -40,9 +44,10 @@ export default new Vuex.Store({
             password: user.password,
           }),
         }).then((resp) => {
+          console.log('login: then');
           if (!resp.ok) {
-            reject();
             commit('authFailed');
+            reject();
           } else {
             commit('authSuccess', resp.json());
             resolve();
@@ -55,6 +60,9 @@ export default new Vuex.Store({
       });
     },
     register({ commit }, user) {
+      const { username } = user;
+      const { password } = user;
+      console.log(`Register User: ${username}, ${password}`);
       return new Promise((resolve, reject) => {
         fetch('/api/auth/register', {
           method: 'POST',
@@ -62,11 +70,12 @@ export default new Vuex.Store({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            username: user.username,
-            password: user.password,
+            username,
+            password,
           }),
         }).then((resp) => {
           console.log('Register complete');
+          console.log(commit);
           if (resp.status === 200) {
             resolve();
           } else {
@@ -92,6 +101,9 @@ export default new Vuex.Store({
             reject();
           });
       });
+    },
+    unauthenticated({ commit }) {
+      commit('authFailed');
     },
   },
   modules: {

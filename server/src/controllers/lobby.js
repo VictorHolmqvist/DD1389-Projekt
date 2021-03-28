@@ -9,8 +9,10 @@ router.get('/alljoinable', async (req, res) => {
     const user = sessionManager.getUser(req.session.authToken);
     socketManager.joinRoom('lobbyBrowser', req.session.authToken);
 
-    await lobbyHandler.getJoinableGames(user).then((games) => {
-        res.status(200).json({ list: games });
+    lobbyHandler.getJoinableGames(user).then((games) => {
+        res.set('Content-Type', 'application/json')
+        res.status(200);
+        res.send({ list: games });
     }).catch((err) => {
         res.sendStatus(400);
     })
@@ -21,7 +23,6 @@ router.get('/alljoinable', async (req, res) => {
 router.post('/creategame', async (req, res) => {
     const user = sessionManager.getUser(req.session.authToken);
     const { lobbyName } = req.body;
-    console.log(`Create game with name: ${lobbyName}`);
 
     await lobbyHandler.createGame(user, lobbyName).then(() => {
         res.sendStatus(200);
@@ -33,7 +34,6 @@ router.post('/creategame', async (req, res) => {
 router.post('/joingame', async (req, res) => {
     const user = sessionManager.getUser(req.session.authToken);
     const { gameId } = req.body;
-    console.log(`Join game with id: ${gameId}`);
 
     await lobbyHandler.joinGame(user, gameId).then(() => {
         console.log(`Successfully joined game with id: ${gameId}`);

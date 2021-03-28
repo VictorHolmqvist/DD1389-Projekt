@@ -92,7 +92,6 @@ class Database {
                     reject(new Error(`Error inserting new Time Slot: ${err.message}`));
                 } else {
                     const lastId = this.lastID;
-                    console.log(`Last ID: ${lastId}`);
                     resolve({
                         status: 'OK',
                         rowid: lastId,
@@ -163,7 +162,6 @@ class Database {
                 } else {
                     console.log('Has fetched joinable Games');
                     rows.forEach((row) => {
-                        console.log(row);
                         games.push(new Game(row.gameId,
                             row.gameName,
                             row.opponentName,
@@ -206,7 +204,6 @@ class Database {
                 } else {
                     console.log('Has fetched active Games');
                     rows.forEach((row) => {
-                        console.log(row);
                         games.push(new Game(row.gameId,
                             row.gameName,
                             {id: row.user1Id, name: row.user1Name},
@@ -223,6 +220,42 @@ class Database {
             });
         });
     }
+
+    async getActiveGameById(gameId) {
+        const query = 'SELECT ' +
+            'game.rowid as gameId, ' +
+            'game.name as gameName, ' +
+            'user1.name as user1Name, ' +
+            'user2.name as user2Name, ' +
+            '* FROM Game as game ' +
+            'LEFT JOIN User as user1 on game.user1Id = user1.rowid ' +
+            'LEFT JOIN User as user2 on game.user2Id = user2.rowid ' +
+            'WHERE ' +
+            'gameId = ? ';
+
+        return new Promise((resolve, reject) => {
+            this.db.get(query, [gameId], (err, row) => {
+                if (err) {
+                    console.error(err);
+                    reject(new Error('Error fetching active game by id from database'));
+                } else {
+                    console.log(`Has fetched active game with id: ${gameId}`);
+
+                    resolve(new Game(row.gameId,
+                        row.gameName,
+                        {id: row.user1Id, name: row.user1Name},
+                        {id: row.user2Id, name: row.user2Name},
+                        row.currentPlayer,
+                        row.gameState,
+                        row.gameOver,
+                        row.draw,
+                        row.winner
+                    ));
+                }
+            });
+        });
+    }
+
 
     async getGameHistoryForUser(userId) {
         const query = 'SELECT rowid, * FROM Game ' +
@@ -242,7 +275,6 @@ class Database {
                 } else {
                     console.log('Has fetched active Games');
                     rows.forEach((row) => {
-                        console.log(row);
                         games.push(new Game(row.rowid,
                             row.name,
                             row.user1Id,
