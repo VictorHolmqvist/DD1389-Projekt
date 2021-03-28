@@ -12,6 +12,7 @@ Vue.use(VueRouter);
 
 const requireAuth = (to, from, next) => {
   if (store.state.isAuthenticated) {
+    console.log('requireAuth: true');
     next();
   } else {
     console.info('Unauthenticated user. Redirecting to login page.');
@@ -28,6 +29,15 @@ const routes = [
 
 ];
 
+// const routes = [
+//   { path: '/', redirect: '/login' },
+//   { path: '/login', component: LoginView },
+//   { path: '/profile', component: ProfileView },
+//   { path: '/lobbybrowser', component: LobbyBrowserView },
+//   { path: '/chesslobby/:gameid', component: ChessLobbyView },
+//
+// ];
+
 const router = new VueRouter({
   mode: 'hash',
   base: process.env.BASE_URL,
@@ -36,10 +46,14 @@ const router = new VueRouter({
 
 console.log(store);
 
-// Setup Authentication guard
 // router.beforeEach((to, from, next) => {
-//
-//
+//   if (store.state.isAuthenticated || to.path === '/login') {
+//     next();
+//   } else {
+//     console.info('Unauthenticated user. Redirecting to login page.');
+//     next('/login');
+//   }
 // });
+
 
 export default router;

@@ -7,12 +7,12 @@
       <h2>Login failed, please try again.</h2>
     </div>
 
-    <form>
+    <form v-on:submit.prevent="login">
       <label>Username</label>
       <input v-model="loginUsername" class="form-control" type="text"/>
       <label>Password</label>
       <input v-model="loginPassword" class="form-control" type="text"/>
-      <button v-on:click="login()">Login</button>
+      <button>Login</button>
     </form>
   </div>
 
@@ -24,12 +24,12 @@
   </div>
   <div id="register" ref="register">
     <h2>Register</h2>
-    <form>
+    <form v-on:submit.prevent="register">
       <label>Username</label>
       <input v-model="registerUsername" class="form-control" type="text"/>
       <label>Password</label>
       <input v-model="registerPassword" class="form-control" type="text"/>
-      <button v-on:click="register()">Register</button>
+      <button>Register</button>
     </form>
   </div>
   </div>
@@ -51,8 +51,10 @@ export default {
       const username = this.loginUsername;
       const password = this.loginPassword;
       this.$store.dispatch('login', { username, password }).then(() => {
+        console.log('Login successful');
         this.$router.push('/lobbybrowser');
-      }).catch(() => {
+      }).catch((err) => {
+        console.error(err.message);
         this.$refs.loginFailed.classList.remove('hidden');
       });
     },
@@ -70,6 +72,9 @@ export default {
       this.registerUsername = '';
       this.registerPassword = '';
     },
+  },
+  beforeRouteUpdate() {
+    console.log('before route update');
   },
 };
 </script>

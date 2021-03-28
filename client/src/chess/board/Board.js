@@ -1,3 +1,7 @@
+const PieceColor = require("@/chess/pieces/PieceColor");
+const WhitePlayer = require("@/chess/player/WhitePlayer");
+const BlackPlayer = require("@/chess/player/BlackPlayer");
+
 
 class Board {
   constructor(builder) {
@@ -18,7 +22,8 @@ class Board {
     this.blackPlayer = new BlackPlayer(this, whiteStandardLegalMoves, blackStandardLegalMoves);
 
     // store the current player for the board.
-    this.currentPlayer = PieceColor.choosePlayer(this.whitePlayer, this.blackPlayer, builder.getMoveMaker());
+    this.currentPlayer = PieceColor.choosePlayer(this.whitePlayer, this.blackPlayer,
+      builder.getMoveMaker());
   }
 
   calculateLegalMoves(pieces) {
@@ -91,7 +96,7 @@ Board.createGameBoard = (builder) => {
 Board.createStandardBoard = () => {
   // creates an instance of a builder and put every piece in the builders map.
   // Each element of map is a Piece.
-  builder = new Builder();
+  let builder = new Builder();
 
   builder.setPiece(new Rook(PieceColor.BLACK, 0));
   builder.setPiece(new Knight(PieceColor.BLACK, 1));
@@ -134,3 +139,5 @@ Board.createStandardBoard = () => {
   // returns a new Board
   return builder.build();
 };
+
+module.exports = Board;

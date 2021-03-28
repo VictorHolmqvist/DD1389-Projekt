@@ -11,6 +11,7 @@ const expressSession = require('express-session');
 const socketIOSession = require('express-socket.io-session');
 const express = require('express');
 const http = require('http');
+const cors = require('cors');
 
 console.logLevel = 4; // Enables debug output
 const publicPath = path.join(__dirname, '..', '..', 'client', 'dist');
@@ -31,6 +32,7 @@ app.use(betterLogging.expressMiddleware(console, {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 
 // Setup session
 const session = expressSession({
@@ -76,6 +78,7 @@ io.on('connection', (socket) => {
         && sessionManager.getUser(authToken) !== null
     ) {
         // If the current user already logged in and then reloaded the page
+        console.log('io on connection: authenticated user, will update socket');
         socketManager.updateUserSocket(authToken, socket);
     } else {
         //The user is not authenticated. Assign a new socketId.

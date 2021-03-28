@@ -2,88 +2,181 @@
 
   <div >
     <div class = "container">
-      <h1>Lobby {{gameId}}</h1>
-        <div v-for = "row in 8" :key="row" class = "cell">
-          <div v-for = "column in 8" :key="column" class = "cell" v-bind:id =
-            decideColor(row,column)
-               @click = "move(8*row+column-8)">
-            </div>
+      <div class = "information">
+        <h1>Lobby {{ gameId }}</h1>
+        <h2> Opponent: {{ opponent }} </h2>
+        <h3> You are: {{ color }} </h3>
+        <h3> Turn: {{ turn }} </h3>
+        <h3> Turns: {{ turns }} </h3>
+        <button id = "giveUpButton"> Give up </button>
+        <button v-on:click = "setClickable" > clickable </button>
+        <button v-on:click = "setNotClickable()" > notClickable </button>
+        <button v-on:click = "loadFromFen()" > LoadFromFen </button>
         </div>
+      <div id = "chessboard" class = "chessboard">
+        <chessboard :fen="loadFen" @onMove="move" id = "board "/>
+      </div>
     </div>
-
   </div>
-
 </template>
 
 <script>
-// const chessGame = require('./chess/ChessGame.js');
+
+import { chessboard } from 'vue-chessboard';
+// import 'vue-chessboard/dist/vue-chessboard.css';
+
 export default {
   name: 'ChessLobby',
+  components: {
+    chessboard,
+  },
   data() {
     return {
+      // holds what color the cient is. The creator of the room is black
+      color: 'black',
+      opponent: null,
+      // turn is either 0 or 1. 0 == black. 1 == white
+      turn: null,
+      // fen holds the fen string for the board. It updates every move.
+      // standard fen
+      loadFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      sendFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      standardFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      turns: 0,
       gameId: this.$route.params.gameid,
     };
   },
   mounted() {
+    fetch('---/api/Gamedata---'+this.gameId)
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Unexpected failure when loading game data');
+        }
+        return resp.json();
+      })
+      .catch(console.error)
+      .then((data) => {
+        // tjena Hannes
+        // INT color = 0 eller 1.    0 = black. 1 = white.
+        // color håller den färg som klienten är
+        this.color = data.color
+        // INT turn =  0 eller 1     0 = black. 1 = white.
+        this.turn = data.turn;
+        // STRING fen = exempel: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+        // fen håller game state och skickas mellan klient och server när drag genomförs
+        this.loadFen = data.fen;
+        // INT turns. Antal omgångar som genomförs.
+        // när båda spelarna genomförs ett drag var ökas turns med +1
+        this.turns = data.turns;
+        // STRING opponent. Håller clientens motståndare.
+        this.opponent = data.opponent;
+
+        if (this.turn === this.color) {
+         this.setClickable();
+        }
+      });
+  },
+  created() {
+    this.socket = this.$root.socket;
+    // listen on when opponent has made a move
+    this.socket.on('---GAMEUPDATE---', (data) => {
+      console.log('GAME UPDATE');
+      this.fen = data.fen;
+      this.turns = data.turns;
+      this.setClickable()
+    });
   },
   methods: {
-    move(tileId) {
-      console.log(tileId);
+    move(data) {
+
+      console.log(data);
+      console.log(data.fen);
+      console.log(data.turn !== this.color);
+      console.log(data.fen !== this.standardFen);
+      // lägga till villkor om server-krasch och spelarens tur??
+      if (data.turn !== this.color && data.fen !== this.standardFen) {
+        console.log('MOVE-METHOD');
+        this.sendFen = data.fen;
+        this.setNotClickable();
+        fetch('/api/---MADEGAMEMOVE---', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fen: this.sendFen,
+            gameId: this.gameId,
+            // är dessa nödvändiga?
+            color: this.color,
+            turn: this.turn,
+            turns: this.turns,
+            opponent: this.opponent,
+          }),
+        }).then((resp) => {
+          if (!resp.ok) {
+            throw new Error('Unexpected failure when sending game move');
+          } else {
+            console.log('Successfully sent game move')
+          }
+
+        });
+      }
     },
-    decideColor(row, column) {
-      const tileId = 8 * row + column - 8;
-      if (row === 1 || row === 3 || row === 5 || row === 7) {
-        return (tileId % 2 === 0 ? 'whiteCell' : 'blackCell');
-      } return (tileId % 2 === 0 ? 'blackCell' : 'whiteCell');
+    setClickable() {
+      $("#chessboard").css("pointer-events","auto");
+      console.log('clickable');
     },
+    setNotClickable() {
+      $("#chessboard").css("pointer-events","none");
+      console.log('not clickable');
+    },
+    loadFromFen(){
+      this.loadFen = this.sendFen
+    }
   },
 };
 </script>
 
 <style scoped>
-:root {
-  --height: 0;
-  --width: 0;
-}
-td:hover {
-  background-color: blanchedalmond;
-}
-body {
-  display: flex;
-  justify-content: center;
+
+.chessboard {
+  padding: 37px;
+  margin: auto;
+  left: 40%;
+  top: 30%;
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: grey;
 }
 
 .container {
-  border-radius: 25px;
-  margin: 50px;
+  background: darkgrey;
+  position: absolute;
   padding: 50px;
-  background: bisque;
-}
-.title {
-  text-align: center;
-}
-
-.cell {
-  float: left;
-  text-align: center;
-  font-size: 60px;
-  height: 70px;
-  width: 70px;
-  background: bisque;
-  margin-right: -1px;
-  margin-top: -1px;
-  padding: 0;
-}
-.cell:hover {
-  background: blanchedalmond;
+  top: 10%;
+  left: 10%;
+  width: 1500px;
+  height: 700px;
 }
 
-#blackCell{
-  background: #B58862;
+.information {
+  margin: 50px;
+  position: center;
 }
 
-#whiteCell{
-  background: #F0D9B5;
+#giveUpButton {
+  margin-top: 10px;
+}
+
+#board {
+  position: center;
+  left: 50%;
+  top: 50%;
+}
+
+#chessboard {
+  pointer-events: none;
 }
 
 </style>

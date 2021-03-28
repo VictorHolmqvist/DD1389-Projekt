@@ -7,39 +7,61 @@
 
     <h2>Active games</h2>
     <div class="row">
-      <div class="well" v-for="game in activeGames" :key="game.id">
+      <div class="well" v-for="game in activeGames" v-bind:key="game.gameId">
         <div class="row" style="text-align: center;">
           <h1>Game {{game.gameName}}</h1>
-          <h2>Game ID: {{game.gameId}}</h2>
+          <p>Game ID: {{game.gameId}}</p>
           <p>
             <span>Opponent: {{ game.opponentName }}</span>
           </p>
           <p>My Turn: {{game.myTurn}}</p>
           <button v-on:click="joinGame(game.id)">Join Game</button>
+          <div class = "boardPreview" >
+            <chessboard :fen="fen" id = "board "/>
+          </div>
         </div>
       </div>
     </div>
 
     <h2>Game history</h2>
 
-
   </div>
 
 </template>
 
 <script>
+import { chessboard } from 'vue-chessboard';
 
 export default {
+  components: {
+    chessboard,
+  },
   name: 'Profile',
   data() {
     return {
       activeGames: [],
       gameHistory: [],
+      isInstanitated: false,
+      fen: '5rr1/3nqpk1/p3p2p/Pp1pP1pP/2pP1PN1/2P1Q3/2P3P1/R4RK1 b - f3 0 28',
     };
+  },
+  beforeRouteEnter(to, from, next) {
+    console.log(`Navigated from: ${from.path} to ${to.path}`);
+    if (to.path === '/profile') {
+      next((vm) => {
+        if (vm.isInstanitated) {
+          vm.getActiveGames();
+          vm.getGameHistory();
+        }
+      });
+    } else {
+      next();
+    }
   },
   methods: {
     getActiveGames() {
-      fetch('/api/profile/activegames')
+      console.log('getActiveGames');
+      this.$http.get('/api/profile/activegames')
         .then((resp) => {
           if (!resp.ok) {
             throw new Error('Unexpected failure when loading timeslots');
@@ -48,12 +70,13 @@ export default {
         })
         .catch(console.error)
         .then((data) => {
-          console.log(`Active games: ${data.list}`);
           this.activeGames = data.list;
         });
     },
     getGameHistory() {
-      fetch('/api/profile/gamehistory')
+      console.log('getGameHistory');
+
+      this.$http.get('/api/profile/gamehistory')
         .then((resp) => {
           if (!resp.ok) {
             throw new Error('Unexpected failure when loading timeslots');
@@ -67,21 +90,14 @@ export default {
         });
     },
     joinGame(id) {
-      fetch('/api/lobby/joingame', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          gameId: id,
-        }),
-      }).then((resp) => {
-        if (resp.ok) {
-          this.$router.push(`/chesslobby/${id}`);
-        } else {
-          console.log(`Failed joining game with id: ${id}`);
-        }
-      });
+      this.$http.post('/api/lobby/joingame', { gameId: id })
+        .then((resp) => {
+          if (resp.ok) {
+            this.$router.push(`/chesslobby/${id}`);
+          } else {
+            console.log(`Failed joining game with id: ${id}`);
+          }
+        });
     },
     logout() {
       this.$store.dispatch('logout').then(() => {
@@ -94,6 +110,21 @@ export default {
   created() {
     this.getActiveGames();
     this.getGameHistory();
+
+    this.socket = this.$root.socket;
+    this.socket.on('update', (updatedGame) => {
+      console.log('GAME UPDATED');
+      this.activeGames.forEach((activeGame, index) => {
+        if (activeGame.gameId === updatedGame.gameId) {
+          console.log('Found game to update');
+          this.$set(this.activeGames, index, updatedGame);
+        }
+      });
+    });
+
+    setTimeout(() => {
+      this.isInstanitated = true;
+    }, 1000);
   },
 };
 </script>
@@ -102,6 +133,21 @@ export default {
 
 p {
   text-align: center;
+}
+
+.well {
+  padding: 10px;
+  margin: 5px auto;
+}
+
+.row {
+  margin: 0px auto;
+  width: 600px;
+}
+
+.row h1 {
+  font-size: 25px;
+  margin: 0 0 10px;
 }
 
 h1 {
@@ -136,6 +182,21 @@ h1 {
 
 .editor timeselector {
   width: 50%;
+}
+
+.boardPreview {
+  pointer-events: none;
+  padding: 37px;
+  margin: auto;
+  left: 40%;
+  top: 30%;
+  text-align: right;
+  width: 400px;
+  height: 400px;
+}
+
+#board {
+  transform: scale(0.5, 0.5);
 }
 
 </style>
