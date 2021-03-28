@@ -14,7 +14,7 @@
         <button v-on:click = "loadFromFen()" > LoadFromFen </button>
         </div>
       <div id = "chessboard" class = "chessboard">
-        <chessboard :fen="fen" @onMove="move" id = "board "/>
+        <chessboard :fen="loadFen" @onMove="move" id = "board "/>
       </div>
     </div>
   </div>
@@ -33,13 +33,15 @@ export default {
   data() {
     return {
       // holds what color the cient is. The creator of the room is black
-      color: 'white',
+      color: 'black',
       opponent: null,
       // turn is either 0 or 1. 0 == black. 1 == white
       turn: null,
       // fen holds the fen string for the board. It updates every move.
       // standard fen
-      fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      loadFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      sendFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      standardFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       turns: 0,
       gameId: this.$route.params.gameid,
     };
@@ -62,7 +64,7 @@ export default {
         this.turn = data.turn;
         // STRING fen = exempel: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
         // fen håller game state och skickas mellan klient och server när drag genomförs
-        this.fen = data.fen;
+        this.loadFen = data.fen;
         // INT turns. Antal omgångar som genomförs.
         // när båda spelarna genomförs ett drag var ökas turns med +1
         this.turns = data.turns;
@@ -86,28 +88,39 @@ export default {
   },
   methods: {
     move(data) {
-      this.fen = data.fen;
-      // lägg till if lastmove was this players move.
-      // typ if (data.turn === this.color)
+
       console.log(data);
-      this.setNotClickable();
-      console.log(this.fen);
-      fetch('/api/---MADEGAMEMOVE---', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fen: this.fen,
-          gameId: this.gameId,
-        }),
-      }).then((resp) => {
-        if (!resp.ok) {
-          throw new Error('Unexpected failure when sending game move');
-        } else {
-          console.log('Successfully sent game move')
-        }
-      });
+      console.log(data.fen);
+      console.log(data.turn !== this.color);
+      console.log(data.fen !== this.standardFen);
+      // lägga till villkor om server-krasch och spelarens tur??
+      if (data.turn !== this.color && data.fen !== this.standardFen) {
+        console.log('MOVE-METHOD');
+        this.sendFen = data.fen;
+        this.setNotClickable();
+        fetch('/api/---MADEGAMEMOVE---', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fen: this.sendFen,
+            gameId: this.gameId,
+            // är dessa nödvändiga?
+            color: this.color,
+            turn: this.turn,
+            turns: this.turns,
+            opponent: this.opponent,
+          }),
+        }).then((resp) => {
+          if (!resp.ok) {
+            throw new Error('Unexpected failure when sending game move');
+          } else {
+            console.log('Successfully sent game move')
+          }
+
+        });
+      }
     },
     setClickable() {
       $("#chessboard").css("pointer-events","auto");
@@ -118,7 +131,7 @@ export default {
       console.log('not clickable');
     },
     loadFromFen(){
-      this.fen = 'rnbqkbnr/pp1ppppp/8/2p5/1P6/8/P1PPPPPP/RNBQKBNR w KQkq c6 0 2'
+      this.loadFen = this.sendFen
     }
   },
 };
