@@ -14,7 +14,16 @@ class SocketEventHandler {
             console.error(err.message);
         })
     }
+    // a game should be removed from joinable games when a user has joined it.
+    async joinedGame(gameid) {
+        await db.getGameById(gameid).then((game) => {
+            const resultModel = new JoinableGameResultModel(game.id, game.name, game.user1)
+            socketManager.emitEvent('lobbyBrowser', 'remove', resultModel);
+        }).catch((err) => {
+            console.error(err.message);
+        })
 
+    }
 }
 
 module.exports = new SocketEventHandler();

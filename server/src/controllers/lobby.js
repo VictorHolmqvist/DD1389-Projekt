@@ -34,9 +34,9 @@ router.post('/joingame', async (req, res) => {
     const user = sessionManager.getUser(req.session.authToken);
     const { gameId } = req.body;
     console.log(`Join game with id: ${gameId}`);
-
     await lobbyHandler.joinGame(user, gameId).then(() => {
         console.log(`Successfully joined game with id: ${gameId}`);
+        socketManager.joinRoom(`chesslobby/${gameId}`, req.session.authToken);
         res.sendStatus(200);
     }).catch((err) => {
         console.error(`Failed joining game with id: ${gameId}, err: ${err.message}`);

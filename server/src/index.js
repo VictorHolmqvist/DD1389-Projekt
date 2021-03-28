@@ -53,10 +53,12 @@ const authController = require('./controllers/auth.js');
 const lobbyController = require('./controllers/lobby.js');
 const profileController = require('./controllers/profile.js');
 const requireAuth = require('./controllers/requireAuth.js')
+const matchController = require('./controllers/matchController.js');
 
 app.use('/api/auth', authController.router);
 app.use('/api/lobby', requireAuth, lobbyController.router);
 app.use('/api/profile', requireAuth, profileController.router);
+app.use('/api/chesslobby', requireAuth, matchController.router);
 
 
 //Setup SocketManager
