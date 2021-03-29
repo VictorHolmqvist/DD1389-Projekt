@@ -151,7 +151,7 @@ class Database {
         } else {
           resolve(new GameModel(
             row.gameId,
-            row.gameName,
+            row.name,
             { user1Name: row.user1Name, user1Id: row.user1Id },
             { user2Name: row.user2Name, user2Id: row.user2Id },
             row.currentPlayer,
