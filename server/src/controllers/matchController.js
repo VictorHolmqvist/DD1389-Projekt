@@ -2,6 +2,7 @@ const express = require('express');
 const sessionManager = require('../sessionManager.js');
 const lobbyHandler = require('../handlers/lobbyHandler.js');
 const socketManager = require('../socketManager.js');
+const socketEventHandler = require('../handlers/socketEventHandler');
 const res = require("express");
 const db = require('../database.js');
 
@@ -14,9 +15,9 @@ router.get('/:game_id', async (req, res) => {
   const user = sessionManager.getUser(req.session.authToken);
   await db.getGameById(game_id).then((gamemodel) => {
     console.log(`Successfully retrieved game:${game_id}`);
-    if (user.id === gamemodel.user1.user1Id) {
+    if (user.id === gamemodel.user1.userId) {
       res.status(200).json({game: gamemodel, color:black});
-    } else if (user.id === gamemodel.user2.user2Id) {
+    } else if (user.id === gamemodel.user2.userId) {
       res.status(200).json({game: gamemodel, color:white});
     } else {
       console.error('something went wrong');
@@ -38,6 +39,7 @@ router.post('/:game_id/new_move',async (req, res) => {
     db.getGameById(game_id).then((gamemodel) => {
       console.log(`Successfully retrieved game:${game_id}`);
       res.sendStatus(200);
+      socketEventHandler.playerMadeMove(user.id, gamemodel);
       socketManager.emitEvent(`chesslobby/${game_id}`, `${game_id}/new_move`, { game: gamemodel });
     }).catch((err) => {
       console.error(`failed retreiving game:${game_id}`);

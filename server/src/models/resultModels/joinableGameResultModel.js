@@ -1,9 +1,9 @@
 
 class JoinableGameResultModel {
-    constructor(gameId, gameName, opponentName) {
+    constructor(gameId, gameName, opponent) {
         this.gameId = gameId;
         this.gameName = gameName;
-        this.opponentName = opponentName;
+        this.opponent = opponent;
     }
 
 }

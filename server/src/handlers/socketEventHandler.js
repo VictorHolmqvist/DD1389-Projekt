@@ -8,7 +8,7 @@ class SocketEventHandler {
     //A new game has been created, send an update to the lobbyBrowser room
     async gameCreated(gameId) {
         await db.getGameById(gameId).then((game) => {
-            const resultModel = new JoinableGameResultModel(game.id, game.name, game.user1.user1Name)
+            const resultModel = new JoinableGameResultModel(game.id, game.name, game.user1)
             try {
                 socketManager.emitEvent('lobbyBrowser', 'new', resultModel);
                 console.log('Emit new-event to lobbyBrowser successful');
@@ -38,6 +38,18 @@ class SocketEventHandler {
                 )
             socketManager.emitEvent(`profile-${game.user1.id}`, 'update', activeGameRM);
         })
+    }
+
+
+    playerMadeMove(id, gamemodel) {
+        let otherUser;
+        if (gamemodel.user1.userId === id) {
+            otherUser = gamemodel.user2;
+        } else if (gamemodel.user2.userId === id) {
+            otherUser = gamemodel.user1;
+        }
+        const updatedActiveGame = new ActiveGameResultModel(gamemodel.id, gamemodel.name, otherUser.name, true, gamemodel.gameState);
+        socketManager.emitEvent(`profile-${otherUser.userId}`, 'update', updatedActiveGame);
     }
 }
 

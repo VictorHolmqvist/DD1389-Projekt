@@ -119,7 +119,7 @@ class Database {
 
   async joinGame(gameId, userId) {
     //TODO Check if the game already has two players?
-    const query = 'UPDATE Game set user2Id = ? WHERE rowid = ?';
+    const query = 'UPDATE Game set user2Id = ? WHERE rowid = ? and user2Id is null';
     return new Promise((resolve, reject) => {
       this.db.run(query, [userId, gameId], (err) => {
         if (err) {
@@ -152,8 +152,8 @@ class Database {
           resolve(new GameModel(
             row.gameId,
             row.name,
-            { user1Name: row.user1Name, user1Id: row.user1Id },
-            { user2Name: row.user2Name, user2Id: row.user2Id },
+            { userName: row.user1Name, userId: row.user1Id },
+            { userName: row.user2Name, userId: row.user2Id },
             row.currentPlayer,
             row.gameState,
             row.gameOver,

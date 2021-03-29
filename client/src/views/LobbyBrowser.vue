@@ -9,7 +9,7 @@
         <div class="row" style="text-align: center;">
           <h1>{{lobby.gameName}}</h1>
           <p>GameId: {{lobby.gameId}}</p>
-          <p>Opponent: {{ lobby.opponentName }}</p>
+          <p>Opponent: {{ lobby.opponent.user1Name }}</p>
           <button v-on:click="joinGame(lobby.gameId)">Join Game</button>
         </div>
       </div>
@@ -125,7 +125,9 @@ export default {
 
     this.socket.on('new', (game) => {
       console.log('NEW GAME');
-      this.lobbies = [...this.lobbies, game];
+      if (game.opponent.user1Id !== this.$store.state.userId) {
+        this.lobbies = [...this.lobbies, game];
+      }
     });
 
     this.socket.on('removed', (gameId) => {

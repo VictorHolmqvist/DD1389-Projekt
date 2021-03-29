@@ -29,7 +29,8 @@ router.post('/authenticate', async (req, res) => {
                 } else {
                     console.debug(`Saved authToken: ${req.session.authToken}`);
                     res.status(200).json({
-                        username: user.name
+                        username: user.name,
+                        userId: user.id,
                     });
                 }
             });
@@ -45,10 +46,10 @@ router.post('/authenticate', async (req, res) => {
 
 router.get('/isAuthenticated', (req, res) => {
     const user = sessionManager.getUser(req.session.authToken);
-
     res.status(200).json({
         isAuthenticated: user !== null,
         username: user !== null ? user.name : 'N/A',
+        userId: user !== null  ? user.id : undefined
     });
 });
 
