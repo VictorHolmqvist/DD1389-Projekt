@@ -48,7 +48,7 @@ class SocketEventHandler {
         } else if (gamemodel.user2.userId === id) {
             otherUser = gamemodel.user1;
         }
-        const updatedActiveGame = new ActiveGameResultModel(gamemodel.id, gamemodel.name, otherUser.name, true, gamemodel.gameState);
+        const updatedActiveGame = new ActiveGameResultModel(gamemodel.id, gamemodel.name, otherUser.userName, true, gamemodel.gameState);
         socketManager.emitEvent(`profile-${otherUser.userId}`, 'update', updatedActiveGame);
     }
 }
