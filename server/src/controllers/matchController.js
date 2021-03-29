@@ -29,22 +29,22 @@ router.get('/:game_id', async (req, res) => {
 });
 
 router.post('/:game_id/new_move',async (req, res) => {
+  console.log('got a post!')
   const game_id = req.params.game_id;
   const { fen } = req.body;
   const user = sessionManager.getUser(req.session.authToken);
-  await db.updateGame(game_id, fen).then(async (err) => {
+   db.updateGame(game_id, fen).then(() => {
     console.log(`Successfully updated game:${game_id}`);
-    await db.getGameById(game_id).then((gamemodel) => {
+    db.getGameById(game_id).then((gamemodel) => {
       console.log(`Successfully retrieved game:${game_id}`);
-      res.status(200);
+      res.sendStatus(200);
       socketManager.emitEvent(`chesslobby/${game_id}`, `${game_id}/new_move`, { game: gamemodel });
     }).catch((err) => {
       console.error(`failed retreiving game:${game_id}`);
       res.sendStatus(400);
     })
-    res.status(200);
   }).catch((err) => {
-    console.error(`failed retreiving game:${game_id}`);
+    console.error(`failed updating game:${game_id} ${err}`);
     res.sendStatus(400);
   })
 });

@@ -169,6 +169,8 @@ export default {
           } else {
             console.log('Successfully sent game move');
           }
+        }).catch((err) => {
+          console.error(err);
         });
       }
     },
