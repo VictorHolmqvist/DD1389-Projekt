@@ -31,7 +31,6 @@ export default {
   },
   data() {
     return {
-      listenForMove: true,
       isInstanitated: false,
       // holds what color the cient is. The creator of the room is black
       color: null,
@@ -68,15 +67,13 @@ export default {
     }).catch(console.error);
   },
   created() {
-    console.log(document.getElementsByClassName('cg-board-wrap')[0]);
-    document.getElementsByClassName('cg-board-wrap')[0].style.width = '100px';
-    document.getElementsByClassName('cg-board-wrap')[0].style.height = '100px';
-
     this.socket = this.$root.socket;
     // listen on when opponent has made a move
-    this.socket.on(`${this.gameId}/new_move`, (data) => {
+    this.socket.on('new_move', (data) => {
       console.log('GAME UPDATE');
-      this.handleNewMove(data);
+      setTimeout(() => {
+        this.handleNewMove(data);
+      }, 500);
     });
   },
   methods: {
@@ -122,9 +119,7 @@ export default {
       this.checkColor(game.gameState);
       // STRING fen = exempel: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
       // fen håller game state och skickas mellan klient och server när drag genomförs
-      this.listenForMove = false;
       this.loadFen = game.gameState;
-      this.listenForMove = true;
 
       if (this.turn === this.color) {
         this.setClickable();
@@ -133,19 +128,13 @@ export default {
     handleInput(data) {
       const black = 0;
       const white = 1;
-      // tjena Hannes
-      // INT color = 0 eller 1.    0 = black. 1 = white.
-      // color håller den färg som klienten är
+
       const { game, color } = data;
       this.color = color;
-      // INT turn =  0 eller 1     0 = black. 1 = white.
       this.checkColor(game.gameState);
-      // STRING fen = exempel: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-      // fen håller game state och skickas mellan klient och server när drag genomförs
-      this.listenForMove = false;
-      this.loadFen = game.gameState;
-      this.listenForMove = true;
-
+      if (this.loadFen !== game.gameState) {
+        this.loadFen = game.gameState;
+      }
       // STRING opponent. Håller clientens motståndare.
       if (this.color === black) {
         this.opponent = game.user2.userName;
@@ -160,8 +149,9 @@ export default {
     move(data) {
       this.turns += 1;
       // lägga till villkor om server-krasch och spelarens tur??
-      if (data.turn !== this.color && data.fen !== this.standardFen
-        && this.listenForMove === true) {
+      if (data.turn !== this.color
+        && data.fen !== this.standardFen
+        && this.loadFen !== data.fen) {
         console.log('MOVE-METHOD');
         this.sendFen = data.fen;
         this.setNotClickable();

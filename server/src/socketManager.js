@@ -15,6 +15,14 @@ class SocketManager {
 
     updateUserSocket(authToken, socket) {
         this.authenticatedSockets[authToken] = socket;
+        const rooms = this.socketRooms[authToken];
+
+        if (rooms && rooms.length > 0) {
+            const room = rooms[0];
+            console.log(`Authtoken: ${authToken} has joined room: ${room}`);
+            socket.join(room);
+        }
+
     }
 
     addUnregisteredSocket(socket) {
