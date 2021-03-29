@@ -125,7 +125,7 @@ export default {
 
     this.socket.on('new', (game) => {
       console.log('NEW GAME');
-      if (game.opponent.user1Id !== this.$store.state.userId) {
+      if (game.opponent.userId !== this.$store.state.userId) {
         this.lobbies = [...this.lobbies, game];
       }
     });

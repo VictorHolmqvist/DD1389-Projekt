@@ -185,8 +185,8 @@ class Database {
             games.push(new GameModel(
               row.gameId,
               row.gameName,
-              { user1Id: row.user1Id, user1Name: row.opponentName },
-              { user2Id: row.user2Id, user2Name: row.user2Name },
+              { userId: row.user1Id, userName: row.opponentName },
+              { userId: row.user2Id, userName: row.user2Name },
               row.currentPlayer,
               row.gameState,
               row.gameOver,
