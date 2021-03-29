@@ -72,6 +72,12 @@ export default {
         this.handleNewMove(data);
       }, 500);
     });
+    this.socket.on('gameOver', () => {
+      console.log('GAME OVER');
+      setTimeout(() => {
+        this.$router.push('/Profile');
+      }, 500);
+    });
   },
   methods: {
     giveUp() {
@@ -158,9 +164,9 @@ export default {
       }
       // STRING opponent. Håller clientens motståndare.
       if (this.color === black) {
-        this.opponent = game.user2;
+        this.opponent.userId = game.user2.userId;
       } else if (this.color === white) {
-        this.opponent = game.user1;
+        this.opponent.userId = game.user1.userId;
       }
 
       if (this.turn === this.color) {

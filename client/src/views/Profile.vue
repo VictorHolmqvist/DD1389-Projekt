@@ -21,7 +21,17 @@
     </div>
 
     <h2>Game history</h2>
-
+    <h4 v-if="historyEmpty">You have currently no history of games.</h4>
+    <div v-if="!historyEmpty" class="row">
+      <div class="well" v-for="finishedGame in gameHistory" v-bind:key="finishedGame.game.gameId">
+        <div class="row" style="text-align: center;">
+          <h1>Game: {{finishedGame.game.name}}</h1>
+          <p>
+            <span>Winner: {{ finishedGame.winner.userName}}</span>
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 
 </template>
@@ -93,7 +103,6 @@ export default {
     },
     getGameHistory() {
       console.log('getGameHistory');
-
       this.$http.get('/api/profile/gamehistory')
         .then((resp) => {
           if (!resp.ok) {
@@ -121,7 +130,6 @@ export default {
   created() {
     this.getActiveGames();
     this.getGameHistory();
-
     this.socket = this.$root.socket;
     this.socket.on('update', (updatedGame) => {
       console.log('GAME UPDATED');
@@ -132,7 +140,10 @@ export default {
         }
       });
     });
-
+    this.socket.on('finishedGame', (finishedGame) => {
+      console.log('GAME FINISHED');
+      this.gameHistory = [...this.gameHistory, finishedGame];
+    });
     setTimeout(() => {
       this.isInstanitated = true;
     }, 1000);

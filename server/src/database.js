@@ -3,6 +3,7 @@ const SqliteDatabase = require('sqlite3').verbose().Database;
 const GameModel = require('./models/GameModel');
 const UserModel = require('./models/UserModel');
 const SessionModel = require('./models/sessionModel')
+const FinishedGameResultModel = require("./models/resultModels/finishedGameResultModel");
 
 class Database {
 
@@ -24,18 +25,18 @@ class Database {
     });
 
     await this.db.run('CREATE TABLE IF NOT EXISTS Session ' +
-        '(authToken TEXT NOT NULL, ' +
-        'userId INTEGER NOT NULL, ' +
-        'socketRoom TEXT, ' +
-        'FOREIGN KEY(userId) REFERENCES User(rowid), ' +
-        'UNIQUE(authToken))',
-        [],
-        ((err) => {
-          console.log('Created Session Table')
-          if (err) {
-            console.error(`Error creating Session Table: ${err.message}`);
-          }
-        }));
+      '(authToken TEXT NOT NULL, ' +
+      'userId INTEGER NOT NULL, ' +
+      'socketRoom TEXT, ' +
+      'FOREIGN KEY(userId) REFERENCES User(rowid), ' +
+      'UNIQUE(authToken))',
+      [],
+      ((err) => {
+        console.log('Created Session Table')
+        if (err) {
+          console.error(`Error creating Session Table: ${err.message}`);
+        }
+      }));
 
     // Create the Game table
     await this.db.run('CREATE TABLE IF NOT EXISTS Game ' +
@@ -134,8 +135,12 @@ class Database {
   }
 
   async getGameById(gameId) {
-    const query = `SELECT g.ROWID as gameId, name, (select name from User where User.ROWID = user1Id) as user1Name, 
-       (select name from User where user2Id) as user2Name, user1Id,
+    const query = `SELECT 
+        g.ROWID as gameId, 
+        name, 
+        (select name from User where User.ROWID = user1Id) as user1Name, 
+       (select name from User where user2Id) as user2Name,
+       user1Id,
        user2Id,
        currentPlayer,
        gameState,
@@ -153,8 +158,8 @@ class Database {
           resolve(new GameModel(
             row.gameId,
             row.name,
-            { userName: row.user1Name, userId: row.user1Id },
-            { userName: row.user2Name, userId: row.user2Id },
+            {userName: row.user1Name, userId: row.user1Id},
+            {userName: row.user2Name, userId: row.user2Id},
             row.currentPlayer,
             row.gameState,
             row.gameOver,
@@ -186,8 +191,8 @@ class Database {
             games.push(new GameModel(
               row.gameId,
               row.gameName,
-              { userId: row.user1Id, userName: row.opponentName },
-              { userId: row.user2Id, userName: row.user2Name },
+              {userId: row.user1Id, userName: row.opponentName},
+              {userId: row.user2Id, userName: row.user2Name},
               row.currentPlayer,
               row.gameState,
               row.gameOver,
@@ -295,33 +300,46 @@ class Database {
 
 
   async getGameHistoryForUser(userId) {
-    const query = 'SELECT rowid, * FROM Game ' +
-      'WHERE ' +
-      'user1Id = ? ' +
-      'or ' +
-      'user2Id = ? ' +
-      'AND ' +
-      'gameOver = 1';
-    const games = [userId, userId];
-
+    const query = `SELECT 
+        g.ROWID as gameId, 
+        name, 
+       (select name from User where User.ROWID = user1Id) as user1Name, 
+       (select name from User where user2Id) as user2Name,
+       user1Id,
+       user2Id,
+       currentPlayer,
+       gameState,
+       gameOver,
+       draw,
+       winner
+       FROM Game g
+       WHERE (user1Id = ? or user2Id = ?) AND gameOver = 1`;
+    const games = [];
     return new Promise((resolve, reject) => {
-      this.db.all(query, [], (err, rows) => {
+      this.db.all(query, [userId, userId], (err, rows) => {
         if (err) {
           console.error(err);
           reject(new Error('Error fetching active games from database'));
         } else {
           console.log('Has fetched active Games');
           rows.forEach((row) => {
-            games.push(new GameModel(row.rowid,
+            const hej = new GameModel(
+              row.rowid,
               row.name,
-              row.user1Id,
-              row.user2Id,
+              { userName :row.user1Name, userId: row.user1Id },
+              { userName : row.user2Name, userId: row.user2Id },
               row.currentPlayer,
               row.gameState,
               row.gameOver,
               row.draw,
-              row.winner
-            ));
+              row.winner);
+            let winner_user;
+            if (row.winner === hej.user1.userId) {
+              winner_user = hej.user1;
+            } else {
+              winner_user = hej.user2;
+            }
+            games.push(new FinishedGameResultModel(hej, winner_user));
           });
           resolve(games);
         }
@@ -361,8 +379,8 @@ class Database {
           console.log('Has fetched sessions');
           rows.forEach((row) => {
             sessions.push(new SessionModel(row.authToken,
-                new UserModel(row.userId, row.name, null),
-                row.socketRoom));
+              new UserModel(row.userId, row.name, null),
+              row.socketRoom));
           });
           resolve(sessions);
         }

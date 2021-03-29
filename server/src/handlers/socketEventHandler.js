@@ -2,7 +2,7 @@ const db = require('../database.js');
 const socketManager = require('../socketManager.js');
 const JoinableGameResultModel = require('../models/resultModels/joinableGameResultModel.js');
 const ActiveGameResultModel = require('../models/resultModels/activeGameResultModel.js');
-
+const FinishedGameResultModel = require('../models/resultModels/finishedGameResultModel');
 class SocketEventHandler {
 
     //A new game has been created, send an update to the lobbyBrowser room
@@ -40,7 +40,16 @@ class SocketEventHandler {
         })
     }
 
-    playerWon(gameId) {
+    async playerWon(gameId, winner) {
+        await db.getGameById(gameId).then((game) => {
+            const finishedGame = new FinishedGameResultModel(game, winner);
+            const { user1, user2 } = game;
+            socketManager.emitEvent(`profile-${user1.userId}`, 'finishedGame', finishedGame);
+            socketManager.emitEvent(`profile-${user2.userId}`, 'finishedGame', finishedGame);
+            socketManager.emitEvent(`chesslobby/${gameId}`, 'gameOver');
+        }).catch((err) => {
+            console.error(err.message);
+        })
     }
 
 
