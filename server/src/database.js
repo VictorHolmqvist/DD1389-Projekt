@@ -98,7 +98,7 @@ class Database {
 
 
   async addGame(userId, lobbyName) {
-    const query = 'INSERT INTO Game VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+    const query = 'INSERT INTO Game (name, user1Id, user2Id, gameOver, draw, winner) VALUES (?, ?, ?, ?, ?, ?)';
 
     return new Promise((resolve, reject) => {
       const rowAdded = function ra(err) {
@@ -112,7 +112,7 @@ class Database {
           });
         }
       };
-      this.db.run(query, [lobbyName, userId, null, 0, '', 0, 0, null], rowAdded);
+      this.db.run(query, [lobbyName, userId, null, 0, 0, null], rowAdded);
     });
 
   }
@@ -133,7 +133,7 @@ class Database {
   }
 
   async getGameById(gameId) {
-    const query = `SELECT g.ROWID as gameId, (select name from User where User.ROWID = user1Id) as user1Name, 
+    const query = `SELECT g.ROWID as gameId, name, (select name from User where User.ROWID = user1Id) as user1Name, 
        (select name from User where user2Id) as user2Name, user1Id,
        user2Id,
        currentPlayer,
@@ -312,14 +312,13 @@ class Database {
     });
   }
 
-  async updateGame(gameId, fen, turns) {
+  async updateGame(gameId, fen) {
     const query = `UPDATE GAME
-                    SET gameState = ?,
-                        turns = turns + 1
+                    SET gameState = ?
                     WHERE
                         ROWID = ?`
     return new Promise((resolve, reject) => {
-      this.db.run(query, [gameId, fen, turns], (err) => {
+      this.db.run(query, [fen, gameId], (err) => {
         if (err) {
           reject(new Error(`Failed fetching game with id: ${gameId}`));
         } else {

@@ -32,14 +32,14 @@ export default {
   data() {
     return {
       // holds what color the cient is. The creator of the room is black
-      color: 'black',
+      color: null,
       opponent: null,
       // turn is either 0 or 1. 0 == black. 1 == white
       turn: null,
       // fen holds the fen string for the board. It updates every move.
       // standard fen
       loadFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-      sendFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      sendFen: null,
       standardFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       turns: 0,
       gameId: this.$route.params.gameid,
@@ -55,42 +55,71 @@ export default {
       })
       .catch(console.error)
       .then((data) => {
-        // tjena Hannes
-        // INT color = 0 eller 1.    0 = black. 1 = white.
-        // color håller den färg som klienten är
-        this.color = data.color;
-        // INT turn =  0 eller 1     0 = black. 1 = white.
-        this.turn = data.turn;
-        // STRING fen = exempel: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-        // fen håller game state och skickas mellan klient och server när drag genomförs
-        this.loadFen = data.fen;
-        // INT turns. Antal omgångar som genomförs.
-        // när båda spelarna genomförs ett drag var ökas turns med +1
-        this.turns = data.turns;
-        // STRING opponent. Håller clientens motståndare.
-        this.opponent = data.opponent;
-
-        if (this.turn === this.color) {
-          this.setClickable();
-        }
+        this.handleInput(data);
       });
   },
   created() {
     this.socket = this.$root.socket;
     // listen on when opponent has made a move
-    this.socket.on('---GAMEUPDATE---', (data) => {
+    this.socket.on(`${this.gameId}/new_move`, (data) => {
       console.log('GAME UPDATE');
-      this.fen = data.fen;
-      this.turns = data.turns;
-      this.setClickable();
+      this.handleNewMove(data);
     });
   },
   methods: {
+    checkColor(gameState) {
+      const black = 0;
+      const white = 1;
+      const regex = /.*\/.* ([bw]) .*/;
+      const color = gameState.match(regex)[1];
+      if (color === 'w') {
+        this.turn = white;
+      } else if (color === 'b') {
+        this.turn = black;
+      }
+    },
+    handleNewMove(data) {
+      // tjena Hannes
+      // INT color = 0 eller 1.    0 = black. 1 = white.
+      // color håller den färg som klienten är
+      const { game } = data;
+      // INT turn =  0 eller 1     0 = black. 1 = white.
+      this.checkColor(game.gameState);
+      // STRING fen = exempel: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+      // fen håller game state och skickas mellan klient och server när drag genomförs
+      this.loadFen = game.gameState;
+      if (this.turn === this.color) {
+        this.setClickable();
+      }
+    },
+    handleInput(data) {
+      const black = 0;
+      const white = 1;
+      // tjena Hannes
+      // INT color = 0 eller 1.    0 = black. 1 = white.
+      // color håller den färg som klienten är
+      const { game, color } = data;
+      this.color = color;
+      // INT turn =  0 eller 1     0 = black. 1 = white.
+      this.checkColor(game.gameState);
+      // STRING fen = exempel: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+      // fen håller game state och skickas mellan klient och server när drag genomförs
+      this.loadFen = game.gameState;
+
+      // STRING opponent. Håller clientens motståndare.
+      if (this.color === black) {
+        this.opponent = game.user2.user2Name;
+      } else if (this.color === white) {
+        this.opponent = game.user1.user1Name;
+      }
+
+      if (this.turn === this.color) {
+        this.setClickable();
+      }
+    },
     move(data) {
-      console.log(data);
-      console.log(data.fen);
-      console.log(data.turn !== this.color);
-      console.log(data.fen !== this.standardFen);
+      console.log(turns);
+      this.turns += 1;
       // lägga till villkor om server-krasch och spelarens tur??
       if (data.turn !== this.color && data.fen !== this.standardFen) {
         console.log('MOVE-METHOD');
@@ -120,11 +149,11 @@ export default {
       }
     },
     setClickable() {
-      $('#chessboard').css('pointer-events', 'auto');
+      document.getElementById('chessboard').setAttribute('style', 'pointer-events: auto');
       console.log('clickable');
     },
     setNotClickable() {
-      $('#chessboard').css('pointer-events', 'none');
+      document.getElementById('chessboard').setAttribute('style', 'pointer-events: none');
       console.log('not clickable');
     },
     loadFromFen() {
