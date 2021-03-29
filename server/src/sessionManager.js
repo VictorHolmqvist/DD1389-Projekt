@@ -1,9 +1,10 @@
 const db = require('./database.js');
-
+const socketManager = require('./socketManager.js');
 
 class SessionManager {
     constructor() {
         this.authenticatedUsers = {};
+        this.timeouts = {};
 
         //Load the sessions from database
         db.getSessions().then((sessions) => {
@@ -13,6 +14,19 @@ class SessionManager {
         }).catch((err) => {
             console.log(err.message);
         });
+    }
+
+    // A user has made a request - update the sessions timeout
+    registerActivity(authToken, req) {
+
+        if (this.timeouts[authToken]) {
+            clearTimeout(this.timeouts[authToken]);
+        }
+
+        this.timeouts[authToken] = setTimeout(() => {
+            this.invalidateUser(authToken, req)
+        }, 100000)
+
     }
 
     addAuthenticatedUser(token, user) {
@@ -35,9 +49,16 @@ class SessionManager {
         return null;
     }
 
+    invalidateUser(authToken, req) {
+        if (this.timeouts[authToken]) {
+            clearTimeout(this.timeouts[authToken]);
+        }
 
+        const socketId = req.session.socketID;
+        // req.session.destroy();
+        req.session.authToken = null;
+        socketManager.invalidateSocket(authToken, socketId);
 
-    invalidateUser(authToken) {
         this.authenticatedUsers[authToken] = null;
 
         db.removeSession(authToken).catch((err) => {
