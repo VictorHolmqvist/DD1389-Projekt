@@ -26,7 +26,7 @@ class SessionManager {
 
         this.timeouts[authToken] = setTimeout(() => {
             this.invalidateUser(authToken, req)
-        }, 1000000)
+        }, 500000)
 
     }
 
