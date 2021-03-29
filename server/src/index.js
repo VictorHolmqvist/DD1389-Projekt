@@ -23,8 +23,8 @@ const port = 8989; // The port that the server will listen to
 const app = express(); // Creates express app
 
 const httpsServer = https.createServer({
-    key: fs.readFileSync(path.join(__dirname, '..', 'cert', 'key.pem')),
-    cert: fs.readFileSync(path.join(__dirname, '..', 'cert', 'cert.pem')),
+  key: fs.readFileSync(path.join(__dirname, '..', 'cert', 'key.pem')),
+  cert: fs.readFileSync(path.join(__dirname, '..', 'cert', 'cert.pem')),
 }, app);
 
 // const httpServer = http.Server(app);
@@ -108,5 +108,5 @@ io.on('connection', (socket) => {
 
 
 httpsServer.listen(port, () => {
-    console.log(`(HTTPS) Listening on https://localhost:${port}`);
-})
+  console.log(`(HTTPS) Listening on https://localhost:${port}`);
+});
