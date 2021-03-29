@@ -4,7 +4,7 @@
     <div class = "container">
       <div class = "information">
         <h1>Lobby {{ gameId }}</h1>
-        <h2> Opponent: {{ opponent }} </h2>
+        <h2> Opponent: {{ opponent.userName  }} </h2>
         <h3 v-if="color === 0"> You are: black </h3>
         <h3 v-if="color === 1" > You are: <span style="color: white">white</span> </h3>
         <h3 v-if="turn === 0"> Turn: black </h3>
@@ -158,9 +158,9 @@ export default {
       }
       // STRING opponent. Håller clientens motståndare.
       if (this.color === black) {
-        this.opponent = game.user2.userName;
+        this.opponent = game.user2;
       } else if (this.color === white) {
-        this.opponent = game.user1.userName;
+        this.opponent = game.user1;
       }
 
       if (this.turn === this.color) {
