@@ -14,7 +14,6 @@
         </div>
       </div>
     </div>
-
     <div ref="lobbyCreator" class="lobby-creator hidden">
       <div class="lobby-creator-content">
         <label>Lobby name</label>
