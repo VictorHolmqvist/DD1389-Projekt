@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
-
+const db = require('./socketManager.js');
 
 class SocketManager {
 
@@ -70,6 +70,7 @@ class SocketManager {
             this.authenticatedSockets[authToken].join(room)
             try {
                 this.socketRooms[authToken].push(room);
+                db.updateUserSocket(authToken, room);
                 console.log(`authToken: ${authToken} has joined room: ${room}`);
             } catch(e) {
                 this.socketRooms[authToken] = [room];

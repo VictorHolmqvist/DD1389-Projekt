@@ -1,8 +1,9 @@
 
 class SessionModel {
-    constructor(authToken, user) {
+    constructor(authToken, user, socketRoom) {
         this.authToken = authToken;
         this.user = user;
+        this.socketRoom = socketRoom;
     }
 }
 
