@@ -46,6 +46,6 @@ Vue.config.productionTip = false;
     render: h => h(App),
     data: {
       socket,
-    },
+    }
   }).$mount('#app');
 })();
