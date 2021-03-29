@@ -5,8 +5,8 @@ const UserModel = require('./models/UserModel');
 const SessionModel = require('./models/sessionModel')
 const FinishedGameResultModel = require("./models/resultModels/finishedGameResultModel");
 
-class Database {
 
+class Database {
   constructor() {
     console.debug('new Database Object');
     const databasePath = path.join(__dirname, '.', 'db.sqlite');
@@ -24,37 +24,38 @@ class Database {
       }
     });
 
-    await this.db.run('CREATE TABLE IF NOT EXISTS Session ' +
-      '(authToken TEXT NOT NULL, ' +
-      'userId INTEGER NOT NULL, ' +
-      'socketRoom TEXT, ' +
-      'FOREIGN KEY(userId) REFERENCES User(rowid), ' +
-      'UNIQUE(authToken))',
-      [],
-      ((err) => {
-        console.log('Created Session Table')
-        if (err) {
-          console.error(`Error creating Session Table: ${err.message}`);
-        }
-      }));
+
+    await this.db.run('CREATE TABLE IF NOT EXISTS Session '
+        + '(authToken TEXT NOT NULL, '
+        + 'userId INTEGER NOT NULL, '
+        + 'socketRoom TEXT, '
+        + 'FOREIGN KEY(userId) REFERENCES User(rowid), '
+        + 'UNIQUE(authToken))',
+    [],
+    ((err) => {
+      console.log('Created Session Table');
+      if (err) {
+        console.error(`Error creating Session Table: ${err.message}`);
+      }
+    }));
 
     // Create the Game table
-    await this.db.run('CREATE TABLE IF NOT EXISTS Game ' +
-      '(name TEXT NOT NULL, ' +
-      'user1Id INTEGER NOT NULL, ' +
-      'user2Id INTEGER, ' +
-      'currentPlayer INTEGER NOT NULL, ' +
-      'gameState TEXT, ' +
-      'gameOver INTEGER NOT NULL, ' +
-      'draw INTEGER, ' +
-      'winner INTEGER, ' +
-      'FOREIGN KEY (user1Id, user2Id) REFERENCES User (rowid, rowid))',
-      [], (err) => {
-        console.log('Created Game table');
-        if (err) {
-          console.error(`Error creating Game Table: ${err.message}`);
-        }
-      });
+    await this.db.run('CREATE TABLE IF NOT EXISTS Game '
+      + '(name TEXT NOT NULL, '
+      + 'user1Id INTEGER NOT NULL, '
+      + 'user2Id INTEGER, '
+      + 'currentPlayer INTEGER NOT NULL, '
+      + 'gameState TEXT, '
+      + 'gameOver INTEGER NOT NULL, '
+      + 'draw INTEGER, '
+      + 'winner INTEGER, '
+      + 'FOREIGN KEY (user1Id, user2Id) REFERENCES User (rowid, rowid))',
+    [], (err) => {
+      console.log('Created Game table');
+      if (err) {
+        console.error(`Error creating Game Table: ${err.message}`);
+      }
+    });
   }
 
 
@@ -116,11 +117,10 @@ class Database {
       };
       this.db.run(query, [lobbyName, userId, null, 0, 0, null], rowAdded);
     });
-
   }
 
   async joinGame(gameId, userId) {
-    //TODO Check if the game already has two players?
+    // TODO Check if the game already has two players?
     const query = 'UPDATE Game set user2Id = ? WHERE rowid = ? and user2Id is null';
     return new Promise((resolve, reject) => {
       this.db.run(query, [userId, gameId], (err) => {
@@ -128,10 +128,10 @@ class Database {
           console.log(`Failed to join game with id: ${gameId} for player with id: ${userId}, err: ${err.message}`);
           reject(new Error(`Failed to join game with id: ${gameId} for player with id: ${userId}`));
         } else {
-          resolve({status: 'OK'});
+          resolve({ status: 'OK' });
         }
       });
-    })
+    });
   }
 
   async getGameById(gameId) {
@@ -149,7 +149,7 @@ class Database {
        winner,
        name
        FROM Game g
-       where gameId = ?`
+       where gameId = ?`;
     return new Promise((resolve, reject) => {
       this.db.get(query, [gameId], (err, row) => {
         if (err || row === undefined) {
@@ -164,20 +164,19 @@ class Database {
             row.gameState,
             row.gameOver,
             row.draw,
-            row.winner
-          ))
-          ;
+            row.winner,
+          ));
         }
       });
     });
   }
 
-  //Returns all the games that a user can join(Only one connected player)
+  // Returns all the games that a user can join(Only one connected player)
   async getJoinableGames(id) {
-    const query = 'SELECT Game.rowid as gameId, ' +
-      'Game.name as gameName, ' +
-      'User.name as opponentName, * FROM Game ' +
-      'INNER JOIN User on Game.user1Id = User.rowid WHERE Game.user2Id is NULL AND Game.user1Id != ?';
+    const query = 'SELECT Game.rowid as gameId, '
+      + 'Game.name as gameName, '
+      + 'User.name as opponentName, * FROM Game '
+      + 'INNER JOIN User on Game.user1Id = User.rowid WHERE Game.user2Id is NULL AND Game.user1Id != ?';
     const games = [];
 
     return new Promise((resolve, reject) => {
@@ -197,7 +196,7 @@ class Database {
               row.gameState,
               row.gameOver,
               row.draw,
-              row.winner
+              row.winner,
             ));
           });
           resolve(games);
@@ -207,20 +206,20 @@ class Database {
   }
 
   async getActiveGamesForUser(userId) {
-    const query = 'SELECT ' +
-      'game.rowid as gameId, ' +
-      'game.name as gameName, ' +
-      'user1.name as user1Name, ' +
-      'user2.name as user2Name, ' +
-      '* FROM Game as game ' +
-      'LEFT JOIN User as user1 on game.user1Id = user1.rowid ' +
-      'LEFT JOIN User as user2 on game.user2Id = user2.rowid ' +
-      'WHERE ' +
-      'game.user1Id = ? ' +
-      'or ' +
-      'game.user2Id = ? ' +
-      'AND ' +
-      'game.gameOver = 0';
+    const query = 'SELECT '
+      + 'game.rowid as gameId, '
+      + 'game.name as gameName, '
+      + 'user1.name as user1Name, '
+      + 'user2.name as user2Name, '
+      + '* FROM Game as game '
+      + 'LEFT JOIN User as user1 on game.user1Id = user1.rowid '
+      + 'LEFT JOIN User as user2 on game.user2Id = user2.rowid '
+      + 'WHERE '
+      + 'game.user1Id = ? '
+      + 'or '
+      + 'game.user2Id = ? '
+      + 'AND '
+      + 'game.gameOver = 0';
     const games = [];
 
     return new Promise((resolve, reject) => {
@@ -233,14 +232,13 @@ class Database {
           rows.forEach((row) => {
             games.push(new GameModel(row.gameId,
               row.gameName,
-              {id: row.user1Id, name: row.user1Name},
-              {id: row.user2Id, name: row.user2Name},
+              { id: row.user1Id, name: row.user1Name },
+              { id: row.user2Id, name: row.user2Name },
               row.currentPlayer,
               row.gameState,
               row.gameOver,
               row.draw,
-              row.winner
-            ));
+              row.winner));
           });
           resolve(games);
         }
@@ -264,16 +262,16 @@ class Database {
   }
 
   async getActiveGameById(gameId) {
-    const query = 'SELECT ' +
-      'game.rowid as gameId, ' +
-      'game.name as gameName, ' +
-      'user1.name as user1Name, ' +
-      'user2.name as user2Name, ' +
-      '* FROM Game as game ' +
-      'LEFT JOIN User as user1 on game.user1Id = user1.rowid ' +
-      'LEFT JOIN User as user2 on game.user2Id = user2.rowid ' +
-      'WHERE ' +
-      'gameId = ? ';
+    const query = 'SELECT '
+      + 'game.rowid as gameId, '
+      + 'game.name as gameName, '
+      + 'user1.name as user1Name, '
+      + 'user2.name as user2Name, '
+      + '* FROM Game as game '
+      + 'LEFT JOIN User as user1 on game.user1Id = user1.rowid '
+      + 'LEFT JOIN User as user2 on game.user2Id = user2.rowid '
+      + 'WHERE '
+      + 'gameId = ? ';
 
     return new Promise((resolve, reject) => {
       this.db.get(query, [gameId], (err, row) => {
@@ -285,14 +283,13 @@ class Database {
 
           resolve(new GameModel(row.gameId,
             row.gameName,
-            {id: row.user1Id, name: row.user1Name},
-            {id: row.user2Id, name: row.user2Name},
+            { id: row.user1Id, name: row.user1Name },
+            { id: row.user2Id, name: row.user2Name },
             row.currentPlayer,
             row.gameState,
             row.gameOver,
             row.draw,
-            row.winner
-          ));
+            row.winner));
         }
       });
     });
@@ -315,6 +312,7 @@ class Database {
        FROM Game g
        WHERE (user1Id = ? or user2Id = ?) AND gameOver = 1`;
     const games = [];
+
     return new Promise((resolve, reject) => {
       this.db.all(query, [userId, userId], (err, rows) => {
         if (err) {
@@ -351,13 +349,13 @@ class Database {
     const query = `UPDATE GAME
                     SET gameState = ?
                     WHERE
-                        ROWID = ?`
+                        ROWID = ?`;
     return new Promise((resolve, reject) => {
       this.db.run(query, [fen, gameId], (err) => {
         if (err) {
           reject(new Error(`Failed fetching game with id: ${gameId}`));
         } else {
-          console.log('updated gamestate')
+          console.log('updated gamestate');
           resolve();
         }
       });
@@ -368,7 +366,7 @@ class Database {
   async getSessions() {
     const query = 'SELECT * FROM Session INNER JOIN User on User.rowid = Session.userId';
 
-    let sessions = [];
+    const sessions = [];
 
     return new Promise((resolve, reject) => {
       this.db.all(query, [], (err, rows) => {
@@ -428,10 +426,7 @@ class Database {
         }
       });
     });
-
   }
-
-
 }
 
 
