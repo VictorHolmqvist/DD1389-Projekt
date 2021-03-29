@@ -30,7 +30,7 @@ router.get('/:game_id', async (req, res) => {
 });
 
 router.post('/:game_id/new_move',async (req, res) => {
-  console.log('got a post!')
+  console.log('got a post!');
   const game_id = req.params.game_id;
   const { fen } = req.body;
   const user = sessionManager.getUser(req.session.authToken);
@@ -47,6 +47,22 @@ router.post('/:game_id/new_move',async (req, res) => {
     })
   }).catch((err) => {
     console.error(`failed updating game:${game_id} ${err}`);
+    res.sendStatus(400);
+  })
+});
+
+router.post('/:game_id/giveUp',async (req, res) => {
+  console.log('got a give up post!');
+  const game_id = req.params.game_id;
+  const user = sessionManager.getUser(req.session.authToken);
+  const { opponent } = req.body;
+
+  db.userGaveUp(game_id, opponent).then(() => {
+    console.log(`Successfully updated won game:${game_id}`);
+    res.sendStatus(200);
+
+  }).catch((err) => {
+    console.error(`failed updating won game:${game_id} ${err}`);
     res.sendStatus(400);
   })
 });

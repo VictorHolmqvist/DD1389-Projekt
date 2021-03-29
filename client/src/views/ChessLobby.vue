@@ -9,7 +9,7 @@
         <h3 v-if="color === 1" > You are: <span style="color: white">white</span> </h3>
         <h3 v-if="turn === 0"> Turn: black </h3>
         <h3 v-if="turn === 1" > Turn: <span style="color: white">white  </span></h3>
-        <button id = "giveUpButton"> Give up </button>
+        <button id = "giveUpButton" v-on:click="giveUp"> Give up </button>
         </div>
       <div id = "chessboard" class = "chessboard">
         <chessboard :fen="loadFen" @onMove="move" id = "board "/>
@@ -74,6 +74,30 @@ export default {
     });
   },
   methods: {
+    giveUp() {
+      fetch(`/api/chesslobby/${this.gameId}/giveUp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fen: this.sendFen,
+          gameId: this.gameId,
+          // är dessa nödvändiga?
+          color: this.color,
+          turn: this.turn,
+          opponent: this.opponent,
+        }),
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Unexpected failure when sending game move');
+        } else {
+          this.$router.push('/Profile');
+        }
+      }).catch((err) => {
+        console.error(err);
+      });
+    },
     getGameId() {
       this.gameId = this.$route.params.gameid;
     },

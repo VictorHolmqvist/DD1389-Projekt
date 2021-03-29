@@ -242,6 +242,21 @@ class Database {
     });
   }
 
+
+  async userGaveUp(gameId, winner) {
+    const query = 'UPDATE GAME SET gameOver = ?, winner = ? WHERE ROWID = ?';
+    return new Promise((resolve, reject) => {
+      this.db.run(query, [1, winner.userId, gameId], (err) => {
+        if (err) {
+          reject(new Error(`Failed fetching game with id: ${gameId}`));
+        } else {
+          console.log('updated winner of match');
+          resolve();
+        }
+      });
+    });
+  }
+
   async getActiveGameById(gameId) {
     const query = 'SELECT ' +
       'game.rowid as gameId, ' +
