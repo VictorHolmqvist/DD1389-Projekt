@@ -44,15 +44,12 @@ export default new Vuex.Store({
             password: user.password,
           }),
         }).then((resp) => {
+          console.log('login: then');
           if (!resp.ok) {
             commit('authFailed');
             reject();
-            return null;
-          }
-          return resp.json();
-        }).then((data) => {
-          if (data) {
-            commit('authSuccess', data);
+          } else {
+            commit('authSuccess', resp.json());
             resolve();
           }
         }).catch((err) => {

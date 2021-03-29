@@ -5,14 +5,13 @@ const socketEventHandler = require('./socketEventHandler.js');
 
 class LobbyHandler {
 
-    async getJoinableGames(user) {
-
+    async getJoinableGames(id) {
         return new Promise((resolve, reject) => {
             let joinableGames = [];
 
-            db.getJoinableGames().then((games) => {
-                games.forEach((game) => {
-                    joinableGames.push(new JoinableGameResultModel(game.id, game.name, game.user1))
+            db.getJoinableGames(id).then((games) => {
+                games.  forEach((game) => {
+                    joinableGames.push(new JoinableGameResultModel(game.id, game.name, game.user1.user1Name))
                 });
                 resolve(joinableGames);
             }).catch((err) => {

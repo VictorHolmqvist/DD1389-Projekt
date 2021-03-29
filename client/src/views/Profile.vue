@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>Profile: {{this.$store.state.username}}</h1>
+    <h1>Profile</h1>
     <h2>Active games</h2>
     <h4 v-if="activeEmpty">You have currently no active games.</h4>
     <div v-if="!activeEmpty" class="row">
