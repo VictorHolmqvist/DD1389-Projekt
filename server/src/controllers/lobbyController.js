@@ -8,8 +8,7 @@ const router = express.Router()
 router.get('/alljoinable', async (req, res) => {
     const user = sessionManager.getUser(req.session.authToken);
     socketManager.joinRoom('lobbyBrowser', req.session.authToken);
-
-    lobbyHandler.getJoinableGames(user).then((games) => {
+    lobbyHandler.getJoinableGames(user.id).then((games) => {
         res.set('Content-Type', 'application/json')
         res.status(200);
         res.send({ list: games });
