@@ -4,7 +4,8 @@
     <div class = "container">
       <div class = "information">
         <h1>Lobby {{ gameId }}</h1>
-        <h2> Opponent: {{ opponent.userName  }} </h2>
+        <h2 v-if="opponent !== null"> Opponent: {{ opponent.userName }} </h2>
+        <h2 v-if="opponent === null"> Opponent: </h2>
         <h3 v-if="color === 0"> You are: black </h3>
         <h3 v-if="color === 1" > You are: <span style="color: white">white</span> </h3>
         <h3 v-if="turn === 0"> Turn: black </h3>
