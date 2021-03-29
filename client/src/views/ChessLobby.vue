@@ -31,6 +31,7 @@ export default {
   },
   data() {
     return {
+      isInstanitated: false,
       // holds what color the cient is. The creator of the room is black
       color: null,
       opponent: null,
@@ -45,18 +46,24 @@ export default {
       gameId: this.$route.params.gameid,
     };
   },
-  mounted() {
-    fetch(`api/chesslobby/${this.gameId}`)
-      .then((resp) => {
-        if (!resp.ok) {
-          throw new Error('Unexpected failure when loading game data');
+  beforeRouteEnter(to, from, next) {
+    console.log(`Navigated from: ${from.path} to ${to.path}`);
+    if (to.path === '/chesslobby') {
+      next((vm) => {
+        if (vm.isInstanitated) {
+          this.getGameState();
         }
-        return resp.json();
-      })
-      .catch(console.error)
-      .then((data) => {
-        this.handleInput(data);
       });
+    } else {
+      next();
+    }
+  },
+  mounted() {
+    this.getGameState().then(() => {
+      setTimeout(() => {
+        this.isInstanitated = true;
+      }, 1000);
+    }).catch(console.error);
   },
   created() {
     this.socket = this.$root.socket;
@@ -67,6 +74,24 @@ export default {
     });
   },
   methods: {
+    getGameState() {
+      return new Promise((resolve, reject) => {
+        fetch(`api/chesslobby/${this.gameId}`)
+          .then((resp) => {
+            if (!resp.ok) {
+              throw new Error('Unexpected failure when loading game data');
+            }
+            return resp.json();
+          })
+          .then((data) => {
+            this.handleInput(data);
+            resolve();
+          }).catch((err) => {
+            console.error(err.message);
+            reject();
+          });
+      });
+    },
     checkColor(gameState) {
       const black = 0;
       const white = 1;
@@ -118,7 +143,6 @@ export default {
       }
     },
     move(data) {
-      console.log(turns);
       this.turns += 1;
       // lägga till villkor om server-krasch och spelarens tur??
       if (data.turn !== this.color && data.fen !== this.standardFen) {
