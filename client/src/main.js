@@ -20,6 +20,7 @@ Vue.config.productionTip = false;
     .catch(console.error);
   store.commit('setIsAuthenticated', isAuthenticated);
 
+
   Vue.http.interceptors.push((request, next) => {
     console.log('HTTP INTERCEPT Before');
     next((resp) => {
@@ -32,11 +33,29 @@ Vue.config.productionTip = false;
   });
 
   const socket = io();
+  let disconnected = false;
+
   socket.connect('localhost:8989');
 
+  socket.on('connect', () => {
+    if (disconnected) {
+      // The client has reconnected after being disconnected. Force a page reload.
+      router.go(0);
+    }
+    disconnected = false;
+  });
+
   socket.on('disconnect', () => {
-    console.log('socket reopened');
+    console.log('socket disconnect');
+    disconnected = true;
     socket.connect('localhost:8989');
+  });
+
+  socket.on('connect_error', () => {
+    console.log('connect_error');
+    setTimeout(() => {
+      socket.connect('localhost:8989');
+    }, 5000);
   });
 
   new Vue({
@@ -46,6 +65,6 @@ Vue.config.productionTip = false;
     render: h => h(App),
     data: {
       socket,
-    }
+    },
   }).$mount('#app');
 })();
