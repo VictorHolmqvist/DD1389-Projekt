@@ -42,14 +42,18 @@ const session = expressSession({
     resave: true,
     saveUninitialized: true,
     key: 'authToken',
+    cookie: {maxAge: 100000, domain: 'localhost'},
+    rolling: true,
 });
 
 app.use(session);
 
-io.use(socketIOSession(session, {
-    autoSave: true,
-    saveUninitialized: true,
-}));
+io.use(socketIOSession(session));
+
+// io.use(socketIOSession(session, {
+//     autoSave: true,
+//     saveUninitialized: true,
+// }));
 
 app.use(express.static(publicPath));
 

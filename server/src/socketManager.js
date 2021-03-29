@@ -36,6 +36,25 @@ class SocketManager {
         this.io.in(room).emit(event, message);
     }
 
+    invalidateSocket(authToken, socketId) {
+
+        // Make the socket unsubscribe to all rooms
+        this.leaveAllRooms(authToken);
+
+        // Clear the list of subscribed rooms for the socket
+        this.socketRooms[authToken] = null;
+
+        // Move the socket to unregistered sockets
+        if (this.authenticatedSockets[authToken] && socketId) {
+            //this.authenticatedSockets[authToken].handshake.session.destroy();
+            //this.authenticatedSockets[authToken].disconnect(true);
+            this.unregisteredSockets[socketId] = this.authenticatedSockets[authToken];
+        }
+
+        // Remove the socket from authenticated sockets
+        this.authenticatedSockets[authToken] = null;
+    }
+
     joinRoom(room, authToken) {
         this.leaveAllRooms(authToken);
         if (this.authenticatedSockets[authToken]) {

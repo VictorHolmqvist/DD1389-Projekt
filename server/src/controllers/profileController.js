@@ -34,16 +34,17 @@ router.get('/gamehistory', async (req, res) => {
 
 router.get('/logout', async (req, res) => {
     if (req.session.authToken) {
-        sessionManager.invalidateUser(req.session.authToken);
-        req.session.destroy((err) => {
-            if (err) {
-                console.error(err);
-                res.sendStatus(401);
-            } else {
-                console.debug('Removed authToken from session');
-                res.sendStatus(200);
-            }
-        });
+        sessionManager.invalidateUser(req.session.authToken, req);
+        res.sendStatus(200);
+        // req.session.destroy((err) => {
+        //     if (err) {
+        //         console.error(err);
+        //         res.sendStatus(401);
+        //     } else {
+        //         console.debug('Removed authToken from session');
+        //         res.sendStatus(200);
+        //     }
+        // });
     } else {
         res.sendStatus(401);
     }

@@ -31,13 +31,21 @@ Vue.config.productionTip = false;
     });
   });
 
+  const socket = io();
+  socket.connect('localhost:8989');
+
+  socket.on('disconnect', () => {
+    console.log('socket reopened');
+    socket.connect('localhost:8989');
+  });
+
   new Vue({
     router,
     store,
     cookies,
     render: h => h(App),
     data: {
-      socket: io().connect(),
+      socket,
     },
   }).$mount('#app');
 })();

@@ -85,10 +85,11 @@ export default {
           }
           return resp.json();
         })
-        .catch(console.error)
         .then((data) => {
-          this.activeGames = data.list;
-        });
+          if (data && data.list) {
+            this.activeGames = data.list;
+          }
+        }).catch(console.error);
     },
     getGameHistory() {
       console.log('getGameHistory');
@@ -100,11 +101,11 @@ export default {
           }
           return resp.json();
         })
-        .catch(console.error)
         .then((data) => {
-          console.log(data.list);
-          this.gameHistory = data.list;
-        });
+          if (data && data.list) {
+            this.gameHistory = data.list;
+          }
+        }).catch(console.error);
     },
     joinGame(id) {
       this.$http.post('/api/lobby/joingame', { gameId: id })
