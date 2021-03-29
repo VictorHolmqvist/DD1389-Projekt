@@ -356,10 +356,10 @@ class Database {
   }
 
   async addSession(authToken, userId) {
-    const query = 'INSERT INTO Session VALUES (?, ?)';
+    const query = 'INSERT INTO Session VALUES (?, ?, ?)';
 
     return new Promise((resolve, reject) => {
-      this.db.run(query, [authToken, userId], (err) => {
+      this.db.run(query, [authToken, userId, null], (err) => {
         if (err) {
           reject(new Error(`Error inserting new Session: ${err.message}`));
         } else {

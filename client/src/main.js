@@ -15,10 +15,10 @@ console.debug('main.js');
 Vue.config.productionTip = false;
 
 (async () => {
-  const { isAuthenticated } = await fetch('/api/auth/isAuthenticated')
+  const data = await fetch('/api/auth/isAuthenticated')
     .then(resp => resp.json())
     .catch(console.error);
-  store.commit('setIsAuthenticated', isAuthenticated);
+  store.commit('setIsAuthenticated', data);
 
 
   Vue.http.interceptors.push((request, next) => {
