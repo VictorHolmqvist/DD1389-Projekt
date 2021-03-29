@@ -2,8 +2,8 @@ const path = require('path'); //  Helps resolve relative paths, into absolute ba
 const SqliteDatabase = require('sqlite3').verbose().Database;
 const GameModel = require('./models/GameModel');
 const UserModel = require('./models/UserModel');
-const SessionModel = require('./models/sessionModel')
-const FinishedGameResultModel = require("./models/resultModels/finishedGameResultModel");
+const SessionModel = require('./models/sessionModel');
+const FinishedGameResultModel = require('./models/resultModels/finishedGameResultModel');
 
 
 class Database {
@@ -158,8 +158,8 @@ class Database {
           resolve(new GameModel(
             row.gameId,
             row.name,
-            {userName: row.user1Name, userId: row.user1Id},
-            {userName: row.user2Name, userId: row.user2Id},
+            { userName: row.user1Name, userId: row.user1Id },
+            { userName: row.user2Name, userId: row.user2Id },
             row.currentPlayer,
             row.gameState,
             row.gameOver,
@@ -190,8 +190,8 @@ class Database {
             games.push(new GameModel(
               row.gameId,
               row.gameName,
-              {userId: row.user1Id, userName: row.opponentName},
-              {userId: row.user2Id, userName: row.user2Name},
+              { userId: row.user1Id, userName: row.opponentName },
+              { userId: row.user2Id, userName: row.user2Name },
               row.currentPlayer,
               row.gameState,
               row.gameOver,
@@ -324,20 +324,21 @@ class Database {
             const hej = new GameModel(
               row.rowid,
               row.name,
-              { userName :row.user1Name, userId: row.user1Id },
-              { userName : row.user2Name, userId: row.user2Id },
+              { userName: row.user1Name, userId: row.user1Id },
+              { userName: row.user2Name, userId: row.user2Id },
               row.currentPlayer,
               row.gameState,
               row.gameOver,
               row.draw,
-              row.winner);
-            let winner_user;
+              row.winner,
+            );
+            let winnerUser;
             if (row.winner === hej.user1.userId) {
-              winner_user = hej.user1;
+              winnerUser = hej.user1;
             } else {
-              winner_user = hej.user2;
+              winnerUser = hej.user2;
             }
-            games.push(new FinishedGameResultModel(hej, winner_user));
+            games.push(new FinishedGameResultModel(hej, winnerUser));
           });
           resolve(games);
         }

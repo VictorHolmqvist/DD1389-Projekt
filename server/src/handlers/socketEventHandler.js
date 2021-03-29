@@ -3,8 +3,8 @@ const socketManager = require('../socketManager.js');
 const JoinableGameResultModel = require('../models/resultModels/joinableGameResultModel.js');
 const ActiveGameResultModel = require('../models/resultModels/activeGameResultModel.js');
 const FinishedGameResultModel = require('../models/resultModels/finishedGameResultModel');
-class SocketEventHandler {
 
+class SocketEventHandler {
   // A new game has been created, send an update to the lobbyBrowser room
   async gameCreated(gameId) {
     console.log(this);
@@ -42,27 +42,29 @@ class SocketEventHandler {
     });
   }
 
-    async playerWon(gameId, winner) {
-        await db.getGameById(gameId).then((game) => {
-            const finishedGame = new FinishedGameResultModel(game, winner);
-            const { user1, user2 } = game;
-            socketManager.emitEvent(`profile-${user1.userId}`, 'finishedGame', finishedGame);
-            socketManager.emitEvent(`profile-${user2.userId}`, 'finishedGame', finishedGame);
-            socketManager.emitEvent(`chesslobby/${gameId}`, 'gameOver');
-        }).catch((err) => {
-            console.error(err.message);
-        })
-    }
+  async playerWon(gameId, winner) {
+    console.log(this);
+    await db.getGameById(gameId).then((game) => {
+      const finishedGame = new FinishedGameResultModel(game, winner);
+      const { user1, user2 } = game;
+      socketManager.emitEvent(`profile-${user1.userId}`, 'finishedGame', finishedGame);
+      socketManager.emitEvent(`profile-${user2.userId}`, 'finishedGame', finishedGame);
+      socketManager.emitEvent(`chesslobby/${gameId}`, 'gameOver');
+    }).catch((err) => {
+      console.error(err.message);
+    });
+  }
 
 
   playerMadeMove(id, gamemodel) {
-      let otherUser;
-      if (gamemodel.user1.userId === id) {
-          otherUser = gamemodel.user2;
-      } else if (gamemodel.user2.userId === id) {
-          otherUser = gamemodel.user1;
-      }
-     
+    console.log(this);
+    let otherUser;
+    if (gamemodel.user1.userId === id) {
+      otherUser = gamemodel.user2;
+    } else if (gamemodel.user2.userId === id) {
+      otherUser = gamemodel.user1;
+    }
+
     const updatedActiveGame = new ActiveGameResultModel(gamemodel.id,
       gamemodel.name,
       otherUser.userName,
