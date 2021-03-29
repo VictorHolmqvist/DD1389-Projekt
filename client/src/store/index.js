@@ -9,6 +9,7 @@ export default new Vuex.Store({
   state: {
     isAuthenticated: false,
     username: '',
+    userId: undefined,
   },
   mutations: {
     setIsAuthenticated(state, isAuthenticated) {
@@ -19,15 +20,18 @@ export default new Vuex.Store({
       console.log(`authSuccess: ${resp}`);
       state.isAuthenticated = true;
       state.username = resp.username;
+      state.userId = resp.userId;
     },
     authFailed(state) {
       console.log('authFailed');
       state.isAuthenticated = false;
       state.username = '';
+      state.userId = undefined;
     },
     logout(state) {
       state.isAuthenticated = false;
       state.username = '';
+      state.userId = undefined;
     },
   },
   actions: {

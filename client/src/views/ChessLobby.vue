@@ -64,7 +64,7 @@ export default {
     this.getGameState().then(() => {
       setTimeout(() => {
         this.isInstanitated = true;
-      }, 1000);
+      }, 10000);
     }).catch(console.error);
   },
   created() {
@@ -148,9 +148,9 @@ export default {
 
       // STRING opponent. Håller clientens motståndare.
       if (this.color === black) {
-        this.opponent = game.user2.user2Name;
+        this.opponent = game.user2.userName;
       } else if (this.color === white) {
-        this.opponent = game.user1.user1Name;
+        this.opponent = game.user1.userName;
       }
 
       if (this.turn === this.color) {
