@@ -32,6 +32,12 @@
               <a style="cursor: pointer;">My Profile</a>
             </li>
           </ul>
+
+          <ul class="nav navbar-nav right-align" v-if="isAuthenticated">
+            <li v-on:click="logout">
+              <a style="cursor: pointer;">Logout</a>
+            </li>
+          </ul>
         </div>
         <!-- /.navbar-collapse -->
       </div>
@@ -46,12 +52,26 @@
 <script>
 console.debug('App.vue');
 export default {
+  computed: {
+    isAuthenticated: function isAuth() {
+      const auth = this.$store.state.isAuthenticated;
+      console.log(`App isAuth = ${auth}`);
+      return auth;
+    },
+  },
   methods: {
     redirect(target) {
       if (this.$route.path !== target) {
         console.log('App.vue redir');
         this.$router.push(target);
       }
+    },
+    logout() {
+      this.$store.dispatch('logout').then(() => {
+        this.$router.push('/login');
+      }).catch((err) => {
+        console.log(`Error logging out: ${err.message}`);
+      });
     },
   },
 };
@@ -115,6 +135,10 @@ button:focus {
 .nav.navbar-nav.navbar-right > li > .unresponsive:hover {
   color: #777777;
   cursor: default;
+}
+
+.right-align {
+  right: 0px;
 }
 
 div.light-blue-background {
