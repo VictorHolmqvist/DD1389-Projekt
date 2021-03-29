@@ -20,9 +20,19 @@ const requireAuth = (to, from, next) => {
   }
 };
 
+const notAuth = (to, from, next) => {
+  if (store.state.isAuthenticated) {
+    console.log('requireAuth: true');
+    next('/lobbybrowser');
+  } else {
+    console.info('Unauthenticated user. Can access the login page.');
+    next();
+  }
+};
+
 const routes = [
   { path: '/', redirect: '/login' },
-  { path: '/login', component: LoginView },
+  { path: '/login', component: LoginView, beforeEnter: notAuth },
   { path: '/profile', component: ProfileView, beforeEnter: requireAuth },
   { path: '/lobbybrowser', component: LobbyBrowserView, beforeEnter: requireAuth },
   { path: '/chesslobby/:gameid', component: ChessLobbyView, beforeEnter: requireAuth },
