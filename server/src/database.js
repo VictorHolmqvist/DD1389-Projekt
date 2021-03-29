@@ -103,7 +103,7 @@ class Database {
     return new Promise((resolve, reject) => {
       const rowAdded = function ra(err) {
         if (err) {
-          reject(new Error(`Error inserting new Time Slot: ${err.message}`));
+          reject(new Error(`Error inserting new Game: ${err.message}`));
         } else {
           const lastId = this.lastID;
           resolve({
