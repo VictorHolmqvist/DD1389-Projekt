@@ -4,14 +4,12 @@
     <div class = "container">
       <div class = "information">
         <h1>Lobby {{ gameId }}</h1>
-        <h2> Opponent: {{ opponent }} </h2>
-        <h3> You are: {{ color }} </h3>
-        <h3> Turn: {{ turn }} </h3>
-        <h3> Turns: {{ turns }} </h3>
-        <button id = "giveUpButton"> Give up </button>
-        <button v-on:click = "setClickable" > clickable </button>
-        <button v-on:click = "setNotClickable()" > notClickable </button>
-        <button v-on:click = "loadFromFen()" > LoadFromFen </button>
+        <h2> Opponent: {{ opponent.userName  }} </h2>
+        <h3 v-if="color === 0"> You are: black </h3>
+        <h3 v-if="color === 1" > You are: <span style="color: white">white</span> </h3>
+        <h3 v-if="turn === 0"> Turn: black </h3>
+        <h3 v-if="turn === 1" > Turn: <span style="color: white">white  </span></h3>
+        <button id = "giveUpButton" v-on:click="giveUp"> Give up </button>
         </div>
       <div id = "chessboard" class = "chessboard">
         <chessboard :fen="loadFen" @onMove="move" id = "board "/>
@@ -42,7 +40,6 @@ export default {
       loadFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       sendFen: null,
       standardFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-      turns: 0,
       gameId: '',
     };
   },
@@ -77,6 +74,30 @@ export default {
     });
   },
   methods: {
+    giveUp() {
+      fetch(`/api/chesslobby/${this.gameId}/giveUp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fen: this.sendFen,
+          gameId: this.gameId,
+          // är dessa nödvändiga?
+          color: this.color,
+          turn: this.turn,
+          opponent: this.opponent,
+        }),
+      }).then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Unexpected failure when sending game move');
+        } else {
+          this.$router.push('/Profile');
+        }
+      }).catch((err) => {
+        console.error(err);
+      });
+    },
     getGameId() {
       this.gameId = this.$route.params.gameid;
     },
@@ -137,9 +158,9 @@ export default {
       }
       // STRING opponent. Håller clientens motståndare.
       if (this.color === black) {
-        this.opponent = game.user2.userName;
+        this.opponent = game.user2;
       } else if (this.color === white) {
-        this.opponent = game.user1.userName;
+        this.opponent = game.user1;
       }
 
       if (this.turn === this.color) {
@@ -147,7 +168,6 @@ export default {
       }
     },
     move(data) {
-      this.turns += 1;
       // lägga till villkor om server-krasch och spelarens tur??
       if (data.turn !== this.color
         && data.fen !== this.standardFen
@@ -166,7 +186,6 @@ export default {
             // är dessa nödvändiga?
             color: this.color,
             turn: this.turn,
-            turns: this.turns,
             opponent: this.opponent,
           }),
         }).then((resp) => {

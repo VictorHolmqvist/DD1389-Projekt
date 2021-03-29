@@ -40,6 +40,9 @@ class SocketEventHandler {
         })
     }
 
+    playerWon(gameId) {
+    }
+
 
     playerMadeMove(id, gamemodel) {
         let otherUser;
