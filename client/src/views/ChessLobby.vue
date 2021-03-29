@@ -75,28 +75,23 @@ export default {
   },
   methods: {
     giveUp() {
-      fetch(`/api/chesslobby/${this.gameId}/giveUp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      this.$http.post(`/api/chesslobby/${this.gameId}/giveUp`,
+        {
           fen: this.sendFen,
           gameId: this.gameId,
-          // är dessa nödvändiga?
           color: this.color,
           turn: this.turn,
           opponent: this.opponent,
-        }),
-      }).then((resp) => {
-        if (!resp.ok) {
-          throw new Error('Unexpected failure when sending game move');
-        } else {
-          this.$router.push('/Profile');
-        }
-      }).catch((err) => {
-        console.error(err);
-      });
+        })
+        .then((resp) => {
+          if (!resp.ok) {
+            throw new Error('Unexpected failure when sending game move');
+          } else {
+            this.$router.push('/Profile');
+          }
+        }).catch((err) => {
+          console.error(err);
+        });
     },
     getGameId() {
       this.gameId = this.$route.params.gameid;
@@ -105,7 +100,7 @@ export default {
       console.log('getGameState');
       this.getGameId();
       return new Promise((resolve, reject) => {
-        fetch(`api/chesslobby/${this.gameId}`)
+        this.$http.get(`api/chesslobby/${this.gameId}`)
           .then((resp) => {
             if (!resp.ok) {
               throw new Error('Unexpected failure when loading game data');
@@ -175,20 +170,15 @@ export default {
         console.log('MOVE-METHOD');
         this.sendFen = data.fen;
         this.setNotClickable();
-        fetch(`/api/chesslobby/${this.gameId}/new_move`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+
+        this.$http.post(`/api/chesslobby/${this.gameId}/new_move`,
+          {
             fen: this.sendFen,
             gameId: this.gameId,
-            // är dessa nödvändiga?
             color: this.color,
             turn: this.turn,
             opponent: this.opponent,
-          }),
-        }).then((resp) => {
+          }).then((resp) => {
           if (!resp.ok) {
             throw new Error('Unexpected failure when sending game move');
           } else {
