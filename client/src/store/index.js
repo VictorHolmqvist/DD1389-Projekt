@@ -12,9 +12,11 @@ export default new Vuex.Store({
     userId: undefined,
   },
   mutations: {
-    setIsAuthenticated(state, isAuthenticated) {
-      state.isAuthenticated = isAuthenticated;
-      console.log(`setIsAuthenticated: ${isAuthenticated}`);
+    setIsAuthenticated(state, data) {
+      state.isAuthenticated = data.isAuthenticated;
+      state.username = data.username;
+      state.userId = data.userId;
+      console.log(`setIsAuthenticated: ${data.isAuthenticated}`);
     },
     authSuccess(state, resp) {
       console.log(`authSuccess: ${resp}`);
