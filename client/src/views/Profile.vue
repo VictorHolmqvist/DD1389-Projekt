@@ -15,7 +15,7 @@
             <span>Opponent: {{ game.opponentName }}</span>
           </p>
           <p>My Turn: {{game.myTurn}}</p>
-          <button v-on:click="joinGame(game.id)">Join Game</button>
+          <button v-on:click="joinGame(game.gameId)">Join Game</button>
           <div class = "boardPreview" >
             <chessboard :fen="fen" id = "board "/>
           </div>

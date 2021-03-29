@@ -21,7 +21,7 @@
     "socket.io": "^1.7.4",
     "sqlite3": "4.1.0",
     "uuid": "8.3.2",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
     "vue-chessboard": "^0.6.7"
   }
 }

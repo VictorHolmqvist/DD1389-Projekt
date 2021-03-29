@@ -47,7 +47,7 @@ export default {
     };
   },
   mounted() {
-    fetch('---/api/Gamedata---'+this.gameId)
+    fetch(`api/chesslobby/${this.gameId}`)
       .then((resp) => {
         if (!resp.ok) {
           throw new Error('Unexpected failure when loading game data');
@@ -59,7 +59,7 @@ export default {
         // tjena Hannes
         // INT color = 0 eller 1.    0 = black. 1 = white.
         // color håller den färg som klienten är
-        this.color = data.color
+        this.color = data.color;
         // INT turn =  0 eller 1     0 = black. 1 = white.
         this.turn = data.turn;
         // STRING fen = exempel: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
@@ -72,7 +72,7 @@ export default {
         this.opponent = data.opponent;
 
         if (this.turn === this.color) {
-         this.setClickable();
+          this.setClickable();
         }
       });
   },
@@ -83,12 +83,11 @@ export default {
       console.log('GAME UPDATE');
       this.fen = data.fen;
       this.turns = data.turns;
-      this.setClickable()
+      this.setClickable();
     });
   },
   methods: {
     move(data) {
-
       console.log(data);
       console.log(data.fen);
       console.log(data.turn !== this.color);
@@ -98,7 +97,7 @@ export default {
         console.log('MOVE-METHOD');
         this.sendFen = data.fen;
         this.setNotClickable();
-        fetch('/api/---MADEGAMEMOVE---', {
+        fetch(`/api/chesslobby/${this.gameId}/new_move`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -116,23 +115,22 @@ export default {
           if (!resp.ok) {
             throw new Error('Unexpected failure when sending game move');
           } else {
-            console.log('Successfully sent game move')
+            console.log('Successfully sent game move');
           }
-
         });
       }
     },
     setClickable() {
-      $("#chessboard").css("pointer-events","auto");
+      $('#chessboard').css('pointer-events', 'auto');
       console.log('clickable');
     },
     setNotClickable() {
-      $("#chessboard").css("pointer-events","none");
+      $('#chessboard').css('pointer-events', 'none');
       console.log('not clickable');
     },
-    loadFromFen(){
-      this.loadFen = this.sendFen
-    }
+    loadFromFen() {
+      this.loadFen = this.sendFen;
+    },
   },
 };
 </script>
