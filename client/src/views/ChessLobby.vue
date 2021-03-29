@@ -23,7 +23,6 @@
 <script>
 
 import { chessboard } from 'vue-chessboard';
-// import 'vue-chessboard/dist/vue-chessboard.css';
 
 export default {
   name: 'ChessLobby',
@@ -158,6 +157,12 @@ export default {
   height: 700px;
 }
 
+#board {
+  position: center;
+  left: 50%;
+  top: 50%;
+}
+
 .information {
   margin: 50px;
   position: center;
@@ -165,12 +170,6 @@ export default {
 
 #giveUpButton {
   margin-top: 10px;
-}
-
-#board {
-  position: center;
-  left: 50%;
-  top: 50%;
 }
 
 #chessboard {

@@ -19,7 +19,8 @@
     "vuejs-datepicker": "1.6.2",
     "vue-timeselector": "1.0.0",
     "vue-cookies": "1.7.4",
-    "vue-resource": "1.5.2"
+    "vue-resource": "1.5.2",
+    "vue-chessboard": "^0.6.7"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.1.0",
