@@ -33,6 +33,7 @@ class SocketManager {
     }
 
     emitEvent(room, event, message) {
+        console.log(`Emit ${event} to ${room}`);
         this.io.in(room).emit(event, message);
     }
 
