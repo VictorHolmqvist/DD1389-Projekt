@@ -68,6 +68,10 @@ export default {
     }).catch(console.error);
   },
   created() {
+    console.log(document.getElementsByClassName('cg-board-wrap')[0]);
+    document.getElementsByClassName('cg-board-wrap')[0].style.width = '100px';
+    document.getElementsByClassName('cg-board-wrap')[0].style.height = '100px';
+
     this.socket = this.$root.socket;
     // listen on when opponent has made a move
     this.socket.on(`${this.gameId}/new_move`, (data) => {
