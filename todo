@@ -1,0 +1,10 @@
+- En användare som inte skapat spel ska kunna se sina spel under profil-sidan
+- Fixa så att man kan ge upp och koppla det till databasen
+- Fixa så att man kan joina ett game om man loggar ut och sedan in igen
+- Uppdatera vems tur det är i profilsidan kontinuerligt
+
+computed value istället
+
+
+
+// FIXA SÅ ATT MAN KAN RELOADA SIDAN UTAN ATT DEN SKICKAR ETT MOVE
