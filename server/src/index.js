@@ -10,6 +10,7 @@ const path = require('path'); // helper library for resolving relative paths
 const expressSession = require('express-session');
 const socketIOSession = require('express-socket.io-session');
 const express = require('express');
+const SQLiteStore = require('connect-sqlite3')(expressSession);
 const http = require('http');
 const cors = require('cors');
 
@@ -36,6 +37,7 @@ app.use(cors());
 
 // Setup session
 const session = expressSession({
+    store: new SQLiteStore,
     secret: 'Super secret! Shh! Do not tell anyone...',
     resave: true,
     saveUninitialized: true,
@@ -51,9 +53,9 @@ io.use(socketIOSession(session, {
 
 app.use(express.static(publicPath));
 
-const authController = require('./controllers/auth.js');
-const lobbyController = require('./controllers/lobby.js');
-const profileController = require('./controllers/profile.js');
+const authController = require('./controllers/authController.js');
+const lobbyController = require('./controllers/lobbyController.js');
+const profileController = require('./controllers/profileController.js');
 const requireAuth = require('./controllers/requireAuth.js')
 const matchController = require('./controllers/matchController.js');
 

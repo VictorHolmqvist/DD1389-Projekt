@@ -18,6 +18,8 @@
     "express": "^4.16.4",
     "express-session": "^1.15.6",
     "express-socket.io-session": "^1.3.5",
+    "connect-sqlite3": "^0.9.11",
+    "bcrypt": "^5.0.1",
     "socket.io": "^1.7.4",
     "sqlite3": "4.1.0",
     "uuid": "8.3.2",

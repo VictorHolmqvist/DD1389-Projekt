@@ -1,12 +1,9 @@
 <template>
   <div class="container">
     <h1>Profile</h1>
-    <p>Page where users can view their match history, see their active games and logout</p>
-    <p>Users that are not logged in will be redirected to /login</p>
-    <button class="red-button" v-on:click="logout()">Logout</button>
-
     <h2>Active games</h2>
-    <div class="row">
+    <h4 v-if="activeEmpty">You have currently no active games.</h4>
+    <div v-if="!activeEmpty" class="row">
       <div class="well" v-for="game in activeGames" v-bind:key="game.gameId">
         <div class="row" style="text-align: center;">
           <h1>Game {{game.gameName}}</h1>
@@ -37,6 +34,26 @@ export default {
     chessboard,
   },
   name: 'Profile',
+  computed: {
+    activeEmpty: function ae() {
+      if (!this.activeGames) {
+        return true;
+      }
+      if (this.activeGames.length === 0) {
+        return true;
+      }
+      return false;
+    },
+    historyEmpty: function he() {
+      if (!this.gameHistory) {
+        return true;
+      }
+      if (this.gameHistory.length === 0) {
+        return true;
+      }
+      return false;
+    },
+  },
   data() {
     return {
       activeGames: [],
@@ -98,13 +115,6 @@ export default {
             console.log(`Failed joining game with id: ${id}`);
           }
         });
-    },
-    logout() {
-      this.$store.dispatch('logout').then(() => {
-        this.$router.push('/login');
-      }).catch((err) => {
-        console.log(`Error logging out: ${err.message}`);
-      });
     },
   },
   created() {
