@@ -16,6 +16,8 @@ class SessionManager {
         return null;
     }
 
+
+
     invalidateUser(authToken) {
         const user = this.authenticatedUsers[authToken];
         this.authenticatedUsers[authToken] = null;
