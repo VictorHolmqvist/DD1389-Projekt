@@ -3,14 +3,14 @@ const db = require('../database.js');
 const sessionManager = require('../sessionManager.js');
 const socketManager = require('../socketManager.js');
 const { v4: uuidv4 } = require('uuid');
-
+const bcrypt = require('bcrypt');
 
 const router = express.Router();
 
 
-router.post('/authenticate', (req, res) => {
-    db.getUserByName(req.body.username).then((user) => {
-        if (req.body.password && req.body.password === user.password) {
+router.post('/authenticate', async (req, res) => {
+    db.getUserByName(req.body.username).then(async (user) => {
+        if (req.body.password && await bcrypt.compare(req.body.password, user.password)) {
 
             // Update the userID of the currently active session
             const authToken = uuidv4();
@@ -53,11 +53,15 @@ router.get('/isAuthenticated', (req, res) => {
 });
 
 
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
     const { username } = req.body;
     const { password } = req.body;
 
-    db.addUser(username, password).then((resp) => {
+    // Hash the password
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    db.addUser(username, hashedPassword).then((resp) => {
         console.log(`Success adding new user: ${resp}`);
         res.sendStatus(200);
     }).catch((err) => {
