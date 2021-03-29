@@ -26,6 +26,7 @@ class Database {
     await this.db.run('CREATE TABLE IF NOT EXISTS Session ' +
         '(authToken TEXT NOT NULL, ' +
         'userId INTEGER NOT NULL, ' +
+        'socketRoom TEXT, ' +
         'FOREIGN KEY(userId) REFERENCES User(rowid), ' +
         'UNIQUE(authToken))',
         [],
@@ -359,7 +360,9 @@ class Database {
         } else {
           console.log('Has fetched sessions');
           rows.forEach((row) => {
-            sessions.push(new SessionModel(row.authToken, new UserModel(row.userId, row.name, null)));
+            sessions.push(new SessionModel(row.authToken,
+                new UserModel(row.userId, row.name, null),
+                row.socketRoom));
           });
           resolve(sessions);
         }
@@ -368,12 +371,26 @@ class Database {
   }
 
   async addSession(authToken, userId) {
-    const query = 'INSERT INTO Session VALUES (?, ?)';
+    const query = 'INSERT INTO Session VALUES (?, ?, ?)';
 
     return new Promise((resolve, reject) => {
-      this.db.run(query, [authToken, userId], (err) => {
+      this.db.run(query, [authToken, userId, null], (err) => {
         if (err) {
           reject(new Error(`Error inserting new Session: ${err.message}`));
+        } else {
+          resolve('OK');
+        }
+      });
+    });
+  }
+
+  async updateSessionSocketRoom(authToken, socketRoom) {
+    const query = 'UPDATE Session set socketRoom = ? WHERE authToken = ?';
+
+    return new Promise((resolve, reject) => {
+      this.db.run(query, [socketRoom, authToken], (err) => {
+        if (err) {
+          reject(new Error(`Error updating socketRoom: ${err.message}`));
         } else {
           resolve('OK');
         }
