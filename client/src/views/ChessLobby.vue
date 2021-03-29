@@ -5,13 +5,11 @@
       <div class = "information">
         <h1>Lobby {{ gameId }}</h1>
         <h2> Opponent: {{ opponent }} </h2>
-        <h3> You are: {{ color }} </h3>
-        <h3> Turn: {{ turn }} </h3>
-        <h3> Turns: {{ turns }} </h3>
+        <h3 v-if="color === 0"> You are: black </h3>
+        <h3 v-if="color === 1" > You are: <span style="color: white">white</span> </h3>
+        <h3 v-if="turn === 0"> Turn: black </h3>
+        <h3 v-if="turn === 1" > Turn: <span style="color: white">white  </span></h3>
         <button id = "giveUpButton"> Give up </button>
-        <button v-on:click = "setClickable" > clickable </button>
-        <button v-on:click = "setNotClickable()" > notClickable </button>
-        <button v-on:click = "loadFromFen()" > LoadFromFen </button>
         </div>
       <div id = "chessboard" class = "chessboard">
         <chessboard :fen="loadFen" @onMove="move" id = "board "/>
@@ -42,7 +40,6 @@ export default {
       loadFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       sendFen: null,
       standardFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
-      turns: 0,
       gameId: '',
     };
   },
@@ -147,7 +144,6 @@ export default {
       }
     },
     move(data) {
-      this.turns += 1;
       // lägga till villkor om server-krasch och spelarens tur??
       if (data.turn !== this.color
         && data.fen !== this.standardFen
@@ -166,7 +162,6 @@ export default {
             // är dessa nödvändiga?
             color: this.color,
             turn: this.turn,
-            turns: this.turns,
             opponent: this.opponent,
           }),
         }).then((resp) => {
