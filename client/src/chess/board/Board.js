@@ -1,6 +1,6 @@
-const PieceColor = require("@/chess/pieces/PieceColor");
-const WhitePlayer = require("@/chess/player/WhitePlayer");
-const BlackPlayer = require("@/chess/player/BlackPlayer");
+const PieceColor = require('@/chess/pieces/PieceColor');
+const WhitePlayer = require('@/chess/player/WhitePlayer');
+const BlackPlayer = require('@/chess/player/BlackPlayer');
 
 
 class Board {
@@ -96,7 +96,7 @@ Board.createGameBoard = (builder) => {
 Board.createStandardBoard = () => {
   // creates an instance of a builder and put every piece in the builders map.
   // Each element of map is a Piece.
-  let builder = new Builder();
+  const builder = new Builder();
 
   builder.setPiece(new Rook(PieceColor.BLACK, 0));
   builder.setPiece(new Knight(PieceColor.BLACK, 1));

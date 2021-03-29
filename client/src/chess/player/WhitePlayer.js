@@ -1,4 +1,4 @@
-const PieceColor = require("@/chess/pieces/PieceColor");
+const PieceColor = require('@/chess/pieces/PieceColor');
 
 class WhitePlayer extends Player {
   constructor(board, whiteStandardLegalMoves, blackStandardLegalMoves) {

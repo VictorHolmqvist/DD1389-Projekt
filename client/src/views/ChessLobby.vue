@@ -46,7 +46,7 @@ export default {
     };
   },
   mounted() {
-    fetch('---/api/Gamedata---'+this.gameId)
+    fetch(`api/chesslobby/${this.gameId}`)
       .then((resp) => {
         if (!resp.ok) {
           throw new Error('Unexpected failure when loading game data');
@@ -96,7 +96,7 @@ export default {
         console.log('MOVE-METHOD');
         this.sendFen = data.fen;
         this.setNotClickable();
-        fetch('/api/---MADEGAMEMOVE---', {
+        fetch(`/api/chesslobby/${this.gameId}/new_move`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

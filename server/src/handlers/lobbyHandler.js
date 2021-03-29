@@ -83,10 +83,9 @@ class LobbyHandler {
     }
 
     async joinGame(user, gameId) {
-
         return new Promise((resolve, reject) => {
             db.joinGame(gameId, user.id).then((resp) => {
-                if (resp === 'OK') {
+                if (resp.status === 'OK') {
                     console.log(`Successfully joined game with id: ${gameId}`);
                     socketEventHandler.playerJoinedGame(gameId);
                     resolve();
