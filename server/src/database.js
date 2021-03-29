@@ -167,25 +167,26 @@ class Database {
   }
 
   //Returns all the games that a user can join(Only one connected player)
-  async getJoinableGames() {
+  async getJoinableGames(id) {
     const query = 'SELECT Game.rowid as gameId, ' +
       'Game.name as gameName, ' +
       'User.name as opponentName, * FROM Game ' +
-      'INNER JOIN User on Game.user1Id = User.rowid WHERE Game.user2Id is NULL';
+      'INNER JOIN User on Game.user1Id = User.rowid WHERE Game.user2Id is NULL AND Game.user1Id != ?';
     const games = [];
 
     return new Promise((resolve, reject) => {
-      this.db.all(query, [], (err, rows) => {
+      this.db.all(query, [id], (err, rows) => {
         if (err) {
           console.error(err);
           reject(new Error('Error fetching joinable games from database'));
         } else {
           console.log('Has fetched joinable Games');
           rows.forEach((row) => {
-            games.push(new GameModel(row.gameId,
+            games.push(new GameModel(
+              row.gameId,
               row.gameName,
-              row.opponentName,
-              row.user2Id,
+              { user1Id: row.user1Id, user1Name: row.opponentName },
+              { user2Id: row.user2Id, user2Name: row.user2Name },
               row.currentPlayer,
               row.gameState,
               row.gameOver,

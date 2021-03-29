@@ -53,7 +53,7 @@ const session = expressSession({
     resave: true,
     saveUninitialized: true,
     key: 'authToken',
-    cookie: {maxAge: 1000000, domain: 'localhost'},
+    cookie: {maxAge: 100000, domain: 'localhost'},
     rolling: true,
 });
 

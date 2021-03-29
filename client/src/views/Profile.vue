@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>Profile</h1>
+    <h1>Profile: {{this.$store.state.username}}</h1>
     <h2>Active games</h2>
     <h4 v-if="activeEmpty">You have currently no active games.</h4>
     <div v-if="!activeEmpty" class="row">
@@ -14,7 +14,7 @@
           <p>My Turn: {{game.myTurn}}</p>
           <button v-on:click="joinGame(game.gameId)">Join Game</button>
           <div class = "boardPreview" >
-            <chessboard :fen="fen" id = "board "/>
+            <chessboard :fen="game.gameState" id = "board "/>
           </div>
         </div>
       </div>
