@@ -14,7 +14,7 @@
           <p>My Turn: {{game.myTurn}}</p>
           <button v-on:click="joinGame(game.gameId)">Join Game</button>
           <div class = "boardPreview" >
-            <chessboard :fen="fen" id = "board "/>
+            <chessboard :fen="game.gameState" id = "board "/>
           </div>
         </div>
       </div>
