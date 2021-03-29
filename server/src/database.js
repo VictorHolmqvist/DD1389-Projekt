@@ -2,6 +2,7 @@ const path = require('path'); //  Helps resolve relative paths, into absolute ba
 const SqliteDatabase = require('sqlite3').verbose().Database;
 const GameModel = require('./models/GameModel');
 const UserModel = require('./models/UserModel');
+const SessionModel = require('./models/sessionModel')
 
 class Database {
 
@@ -21,6 +22,19 @@ class Database {
         console.error(`Error creating User Table: ${err.message}`);
       }
     });
+
+    await this.db.run('CREATE TABLE IF NOT EXISTS Session ' +
+        '(authToken TEXT NOT NULL, ' +
+        'userId INTEGER NOT NULL, ' +
+        'FOREIGN KEY(userId) REFERENCES User(rowid), ' +
+        'UNIQUE(authToken))',
+        [],
+        ((err) => {
+          console.log('Created Session Table')
+          if (err) {
+            console.error(`Error creating Session Table: ${err.message}`);
+          }
+        }));
 
     // Create the Game table
     await this.db.run('CREATE TABLE IF NOT EXISTS Game ' +
@@ -315,6 +329,59 @@ class Database {
       });
     });
   }
+
+
+  async getSessions() {
+    const query = 'SELECT * FROM Session INNER JOIN User on User.rowid = Session.userId';
+
+    let sessions = [];
+
+    return new Promise((resolve, reject) => {
+      this.db.all(query, [], (err, rows) => {
+        if (err) {
+          console.error(err);
+          reject(new Error('Error fetching sessions from database'));
+        } else {
+          console.log('Has fetched sessions');
+          rows.forEach((row) => {
+            sessions.push(new SessionModel(row.authToken, new UserModel(row.userId, row.name, null)));
+          });
+          resolve(sessions);
+        }
+      });
+    });
+  }
+
+  async addSession(authToken, userId) {
+    const query = 'INSERT INTO Session VALUES (?, ?)';
+
+    return new Promise((resolve, reject) => {
+      this.db.run(query, [authToken, userId], (err) => {
+        if (err) {
+          reject(new Error(`Error inserting new Session: ${err.message}`));
+        } else {
+          resolve('OK');
+        }
+      });
+    });
+  }
+
+  async removeSession(authToken) {
+    const query = 'DELETE FROM Session WHERE authToken = ?';
+
+    return new Promise((resolve, reject) => {
+      this.db.run(query, [authToken], (err) => {
+        if (err) {
+          reject(new Error(`Error removing Session: ${err.message}`));
+        } else {
+          resolve('OK');
+        }
+      });
+    });
+
+  }
+
+
 }
 
 
