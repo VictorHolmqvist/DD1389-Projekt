@@ -118,7 +118,7 @@ export default {
       }
     },
     move(data) {
-      console.log(turns);
+      console.log(this.turns);
       this.turns += 1;
       // lägga till villkor om server-krasch och spelarens tur??
       if (data.turn !== this.color && data.fen !== this.standardFen) {
@@ -145,6 +145,8 @@ export default {
           } else {
             console.log('Successfully sent game move');
           }
+        }).catch((err) => {
+          console.error(err);
         });
       }
     },
