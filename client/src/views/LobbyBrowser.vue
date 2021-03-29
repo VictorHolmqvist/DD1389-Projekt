@@ -35,6 +35,7 @@ export default {
     return {
       lobbies: [],
       lobbyNameTF: '',
+      isInstanitated: false,
     };
   },
   computed: {
@@ -50,8 +51,12 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     console.log(`Navigated from: ${from.path} to ${to.path}`);
-    if (to.path === '/lobbybrowser' && from.path !== '/login') {
-      next(vm => vm.getAllJoinable());
+    if (to.path === '/lobbybrowser' && from.patch !== '/lobbybrowser') {
+      next((vm) => {
+        if (vm.isInstanitated) {
+          vm.getAllJoinable();
+        }
+      });
     } else {
       next();
     }
@@ -90,24 +95,32 @@ export default {
     },
     getAllJoinable() {
       console.log('alljoinable');
-      this.$http.get('/api/lobby/alljoinable').then((resp) => {
-        console.log('alljoinable then');
-        if (!resp.ok) {
-          console.log('LobbyBrowser: failed loading joinable games, status is not ok');
-        }
-        const respJson = resp.json();
-        console.log(`resp.json = ${respJson}`);
-        return respJson;
-      }).then((data) => {
-        console.log(data.list);
-        this.lobbies = data.list;
-      }).catch((err) => {
-        console.log(`LobbyBrowser: failed loading joinable games: ${err.message}, ${err.status}`);
+      return new Promise((resolve, reject) => {
+        this.$http.get('/api/lobby/alljoinable').then((resp) => {
+          console.log('alljoinable then');
+          if (!resp.ok) {
+            console.log('LobbyBrowser: failed loading joinable games, status is not ok');
+          }
+          const respJson = resp.json();
+          console.log(`resp.json = ${respJson}`);
+          return respJson;
+        }).then((data) => {
+          console.log(data.list);
+          this.lobbies = data.list;
+          resolve();
+        }).catch((err) => {
+          console.log(`LobbyBrowser: failed loading joinable games: ${err.message}, ${err.status}`);
+          reject();
+        });
       });
     },
   },
   created() {
-    this.getAllJoinable();
+    this.getAllJoinable().then(() => {
+      setTimeout(() => {
+        this.isInstanitated = true;
+      }, 1000);
+    }).catch(console.error);
     this.socket = this.$root.socket;
 
     this.socket.on('new', (game) => {
