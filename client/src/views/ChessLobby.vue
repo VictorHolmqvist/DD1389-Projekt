@@ -160,9 +160,9 @@ export default {
       }
       // STRING opponent. Håller clientens motståndare.
       if (this.color === black) {
-        this.opponent.userId = game.user2.userId;
+        this.opponent = game.user2;
       } else if (this.color === white) {
-        this.opponent.userId = game.user1.userId;
+        this.opponent = game.user1;
       }
 
       if (this.turn === this.color) {
