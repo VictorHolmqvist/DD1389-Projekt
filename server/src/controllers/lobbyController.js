@@ -44,6 +44,7 @@ router.post('/joingame', async (req, res) => {
         if (resp.status === 'OK') {
           console.log(`Successfully joined game with id: ${gameId}`);
           socketEventHandler.playerJoinedGame(gameId);
+          socketManager.emitEvent(`chesslobby/${gameId}`, 'foundOpponent', {userName: user.name, userId: user.id});
           res.sendStatus(200);
         } else {
           console.error(`Failed joining game with id: ${gameId}, database issue.`);

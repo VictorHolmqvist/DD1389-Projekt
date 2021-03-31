@@ -9,12 +9,12 @@
         <div class="row" style="text-align: center;">
           <h1>{{lobby.gameName}}</h1>
           <p>GameId: {{lobby.gameId}}</p>
-          <p>Opponent: {{ lobby.opponentName }}</p>
+          <p>Opponent: {{ lobby.opponent.userName }}</p>
           <button v-on:click="joinGame(lobby.gameId)">Join Game</button>
         </div>
       </div>
     </div>
-    
+
     <div ref="lobbyCreator" class="lobby-creator hidden">
       <div class="lobby-creator-content">
         <label>Lobby name</label>
@@ -65,6 +65,9 @@ export default {
       this.lobbyNameTF = '';
     },
     createGame() {
+      if (!this.lobbyNameTF) {
+        this.lobbyNameTF = 'New Game';
+      }
       this.$http.post('/api/lobby/creategame', { lobbyName: this.lobbyNameTF })
         .then((resp) => {
           if (resp.status === 200) {
@@ -112,6 +115,7 @@ export default {
 
     this.socket.on('new', (game) => {
       console.log('NEW GAME');
+      console.log(game);
       if (game.opponent.userId !== this.$store.state.userId) {
         this.lobbies = [...this.lobbies, game];
       }

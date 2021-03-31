@@ -79,6 +79,13 @@ export default {
         this.$router.push('/Profile');
       }, 500);
     });
+    this.socket.on('foundOpponent', (opponent) => {
+      if (opponent.userId !== this.$store.state.userId) {
+        console.log('FOUND OPPONENT');
+        this.opponent = opponent;
+      }
+      this.socket.off('foundOpponent');
+    });
   },
   methods: {
     giveUp() {
