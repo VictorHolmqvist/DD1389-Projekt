@@ -11,7 +11,7 @@ class SocketEventHandler {
     await db.getGameById(gameId).then((game) => {
       const resultModel = new JoinableGameResultModel(game.id, game.name, game.user1);
       try {
-        socketManager.emitEvent('lobbyBrowser', 'new', resultModel);
+        socketManager.emitEvent('lobbyBrowser/new', resultModel);
         console.log('Emit new-event to lobbyBrowser successful');
       } catch (e) {
         console.log(`Failed sending: new to lobbyBrowser: ${e}`);
@@ -27,7 +27,7 @@ class SocketEventHandler {
   async playerJoinedGame(gameId) {
     console.log(this);
     // Remove the game from the list of joinable games in the lobbyBrowser view
-    socketManager.emitEvent('lobbyBrowser', 'removed', gameId);
+    socketManager.emitEvent('lobbyBrowser/removed', gameId);
 
     // Update the game owner's list of active games
     await db.getActiveGameById(gameId).then((game) => {
@@ -38,7 +38,7 @@ class SocketEventHandler {
         game.currentPlayer === 0,
         game.gameState,
       );
-      socketManager.emitEvent(`profile-${game.user1.id}`, 'update', activeGameRM);
+      socketManager.emitEvent(`profile-${game.user1.id}/update`, activeGameRM);
     });
   }
 
@@ -47,9 +47,9 @@ class SocketEventHandler {
     await db.getGameById(gameId).then((game) => {
       const finishedGame = new FinishedGameResultModel(game, winner);
       const { user1, user2 } = game;
-      socketManager.emitEvent(`profile-${user1.userId}`, 'finishedGame', finishedGame);
-      socketManager.emitEvent(`profile-${user2.userId}`, 'finishedGame', finishedGame);
-      socketManager.emitEvent(`chesslobby/${gameId}`, 'gameOver');
+      socketManager.emitEvent(`profile-${user1.userId}/finishedGame`, finishedGame);
+      socketManager.emitEvent(`profile-${user2.userId}/finishedGame`, finishedGame);
+      socketManager.emitEvent(`chesslobby/${gameId}/gameOver`);
     }).catch((err) => {
       console.error(err.message);
     });
@@ -70,7 +70,7 @@ class SocketEventHandler {
       otherUser.userName,
       true,
       gamemodel.gameState);
-    socketManager.emitEvent(`profile-${otherUser.userId}`, 'update', updatedActiveGame);
+    socketManager.emitEvent(`profile-${otherUser.userId}/update`, updatedActiveGame);
   }
 }
 

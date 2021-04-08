@@ -77,6 +77,8 @@ export default {
     if (to.path === '/profile') {
       next((vm) => {
         if (vm.isInstanitated) {
+          vm.removeListeners();
+          vm.addListeners();
           vm.getActiveGames();
           vm.getGameHistory();
         }
@@ -126,24 +128,32 @@ export default {
           }
         });
     },
+    addListeners() {
+      this.socket = this.$root.socket;
+      this.socket.on(`profile-${this.$store.state.userId}/update`, (updatedGame) => {
+        console.log('GAME UPDATED');
+        this.activeGames.forEach((activeGame, index) => {
+          if (activeGame.gameId === updatedGame.gameId) {
+            console.log('Found game to update');
+            this.$set(this.activeGames, index, updatedGame);
+          }
+        });
+      });
+      console.log(`PROFILE ID: ${this.$store.state.userId}`);
+      this.socket.on(`profile-${this.$store.state.userId}/finishedGame`, (finishedGame) => {
+        console.log('GAME FINISHED');
+        this.gameHistory = [...this.gameHistory, finishedGame];
+      });
+    },
+    removeListeners() {
+      this.$root.socket.removeAllListeners();
+    },
   },
   created() {
     this.getActiveGames();
     this.getGameHistory();
-    this.socket = this.$root.socket;
-    this.socket.on('update', (updatedGame) => {
-      console.log('GAME UPDATED');
-      this.activeGames.forEach((activeGame, index) => {
-        if (activeGame.gameId === updatedGame.gameId) {
-          console.log('Found game to update');
-          this.$set(this.activeGames, index, updatedGame);
-        }
-      });
-    });
-    this.socket.on('finishedGame', (finishedGame) => {
-      console.log('GAME FINISHED');
-      this.gameHistory = [...this.gameHistory, finishedGame];
-    });
+    this.addListeners();
+
     setTimeout(() => {
       this.isInstanitated = true;
     }, 1000);

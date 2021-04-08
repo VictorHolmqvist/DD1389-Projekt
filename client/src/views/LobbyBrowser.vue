@@ -51,6 +51,11 @@ export default {
   beforeRouteEnter(to, from, next) {
     console.log(`Navigated from: ${from.path} to ${to.path}`);
     if (to.path === '/lobbybrowser' && from.path !== '/login') {
+      next((vm) => {
+        vm.removeListeners();
+        vm.addListeners();
+        vm.getAllJoinable();
+      });
       next(vm => vm.getAllJoinable());
     } else {
       next();
@@ -108,27 +113,33 @@ export default {
         console.log(`LobbyBrowser: failed loading joinable games: ${err.message}, ${err.status}`);
       });
     },
+    addListeners() {
+      this.socket = this.$root.socket;
+
+      this.socket.on('lobbyBrowser/new', (game) => {
+        console.log('NEW GAME');
+        console.log(game);
+        if (game.opponent.userId !== this.$store.state.userId) {
+          this.lobbies = [...this.lobbies, game];
+        }
+      });
+
+      this.socket.on('lobbyBrowser/removed', (gameId) => {
+        console.log('REMOVED');
+        this.lobbies.forEach((game, index) => {
+          if (game.gameId === gameId) {
+            this.lobbies.splice(index, 1);
+          }
+        });
+      });
+    },
+    removeListeners() {
+      this.$root.socket.removeAllListeners();
+    },
   },
   created() {
     this.getAllJoinable();
-    this.socket = this.$root.socket;
-
-    this.socket.on('new', (game) => {
-      console.log('NEW GAME');
-      console.log(game);
-      if (game.opponent.userId !== this.$store.state.userId) {
-        this.lobbies = [...this.lobbies, game];
-      }
-    });
-
-    this.socket.on('removed', (gameId) => {
-      console.log('REMOVED');
-      this.lobbies.forEach((game, index) => {
-        if (game.gameId === gameId) {
-          this.lobbies.splice(index, 1);
-        }
-      });
-    });
+    this.addListeners();
   },
 };
 </script>

@@ -20,6 +20,8 @@ router.post('/authenticate', async (req, res) => {
       if (req.session.socketID) {
         console.log(`/authenticate found socketId: ${req.session.socketID}`);
         socketManager.assignUnregisteredSocket(req.session.socketID, authToken);
+      } else {
+        console.log(`Unable to find socketID: ${req.session.socketID}`);
       }
 
       req.session.save((err) => {

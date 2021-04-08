@@ -58,7 +58,10 @@ const session = expressSession({
 
 app.use(session);
 
-io.use(socketIOSession(session));
+io.use(socketIOSession(session), {
+  autoSave: true,
+  resave: true,
+});
 
 
 app.use(express.static(publicPath));
@@ -94,10 +97,8 @@ io.on('connection', (socket) => {
   } else {
     // The user is not authenticated. Assign a new socketId.
     socket.handshake.session.socketID = socketManager.addUnregisteredSocket(socket);
-    socket.handshake.session.save((err) => {
-      if (err) console.error(err);
-      else console.debug(`Saved socketID: ${socket.handshake.session.socketID}`);
-    });
+    socket.handshake.session.save();
+    console.debug(`Saved socketID: ${socket.handshake.session.socketID}`);
   }
 });
 

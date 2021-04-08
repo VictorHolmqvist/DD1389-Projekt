@@ -37,8 +37,7 @@ router.post('/:gameId/new_move', async (req, res) => {
     db.getGameById(gameId).then((gamemodel) => {
       console.log(`Successfully retrieved game:${gameId}`);
       res.sendStatus(200);
-      socketManager.joinRoom(`chesslobby/${gameId}`, req.session.authoken)
-      socketManager.emitEvent(`chesslobby/${gameId}`, 'new_move', { game: gamemodel });
+      socketManager.emitEvent(`chesslobby/${gameId}/new_move`, { game: gamemodel });
       socketEventHandler.playerMadeMove(user.id, gamemodel);
     }).catch(() => {
       console.error(`failed retreiving game:${gameId}`);

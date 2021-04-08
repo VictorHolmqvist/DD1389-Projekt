@@ -50,6 +50,8 @@ export default {
       next((vm) => {
         if (vm.isInstanitated) {
           console.log('this listen for move = false');
+          vm.removeListeners();
+          vm.addListeners();
           vm.getGameState();
         }
       });
@@ -65,29 +67,37 @@ export default {
     }).catch(console.error);
   },
   created() {
-    this.socket = this.$root.socket;
-    // listen on when opponent has made a move
-    this.socket.on('new_move', (data) => {
-      console.log('GAME UPDATE');
-      setTimeout(() => {
-        this.handleNewMove(data);
-      }, 500);
-    });
-    this.socket.on('gameOver', () => {
-      console.log('GAME OVER');
-      setTimeout(() => {
-        this.$router.push('/Profile');
-      }, 500);
-    });
-    this.socket.on('foundOpponent', (opponent) => {
-      if (opponent.userId !== this.$store.state.userId) {
-        console.log('FOUND OPPONENT');
-        this.opponent = opponent;
-      }
-      this.socket.off('foundOpponent');
-    });
+    this.addListeners();
   },
   methods: {
+    removeListeners() {
+      this.$root.socket.removeAllListeners();
+    },
+    addListeners() {
+      this.socket = this.$root.socket;
+      console.log(`Now listening for events for gameId: ${this.getGameId()}`);
+
+      // listen on when opponent has made a move
+      this.socket.on(`chesslobby/${this.getGameId()}/new_move`, (data) => {
+        console.log('GAME UPDATE');
+        setTimeout(() => {
+          this.handleNewMove(data);
+        }, 500);
+      });
+      this.socket.on(`chesslobby/${this.getGameId()}/gameOver`, () => {
+        console.log('GAME OVER');
+        setTimeout(() => {
+          this.$router.push('/Profile');
+        }, 500);
+      });
+      this.socket.on(`chesslobby/${this.getGameId()}/foundOpponent`, (opponent) => {
+        if (opponent.userId !== this.$store.state.userId) {
+          console.log('FOUND OPPONENT');
+          this.opponent = opponent;
+        }
+        this.socket.off('foundOpponent');
+      });
+    },
     giveUp() {
       this.$http.post(`/api/chesslobby/${this.gameId}/giveUp`,
         {
@@ -109,6 +119,7 @@ export default {
     },
     getGameId() {
       this.gameId = this.$route.params.gameid;
+      return this.gameId;
     },
     getGameState() {
       console.log('getGameState');

@@ -9,7 +9,6 @@ const router = express.Router();
 
 router.get('/activegames', async (req, res) => {
   const user = sessionManager.getUser(req.session.authToken);
-  socketManager.joinRoom(`profile-${user.id}`, req.session.authToken);
 
   await lobbyHandler.getActiveGamesForUser(user).then((games) => {
     res.status(200).json({ list: games });

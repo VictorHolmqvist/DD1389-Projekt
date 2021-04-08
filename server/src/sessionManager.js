@@ -10,7 +10,6 @@ class SessionManager {
     db.getSessions().then((sessions) => {
       sessions.forEach((session) => {
         this.authenticatedUsers[session.authToken] = session.user;
-        socketManager.socketRooms[session.authToken] = [session.socketRoom];
       });
     }).catch((err) => {
       console.log(err.message);
