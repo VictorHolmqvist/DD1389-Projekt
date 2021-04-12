@@ -14,8 +14,11 @@ router.post('/authenticate', async (req, res) => {
       // Update the userID of the currently active session
       const authToken = uuidv4();
       req.session.authToken = authToken;
+      req.session.expiration = Date.now() + 30000;
+
       console.log(`NEW TOKEN: ${authToken}`);
       sessionManager.addAuthenticatedUser(authToken, user);
+      socketManager.updateExpirationTime(authToken, req.session.expiration)
 
       if (req.session.socketID) {
         console.log(`/authenticate found socketId: ${req.session.socketID}`);

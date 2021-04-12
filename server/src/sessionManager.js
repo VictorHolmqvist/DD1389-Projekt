@@ -5,6 +5,7 @@ class SessionManager {
   constructor() {
     this.authenticatedUsers = {};
     this.timeouts = {};
+    // this.timeouts = {};
 
     // Load the sessions from database
     db.getSessions().then((sessions) => {
@@ -14,17 +15,6 @@ class SessionManager {
     }).catch((err) => {
       console.log(err.message);
     });
-  }
-
-  // A user has made a request - update the sessions timeout
-  registerActivity(authToken, req) {
-    if (this.timeouts[authToken]) {
-      clearTimeout(this.timeouts[authToken]);
-    }
-
-    this.timeouts[authToken] = setTimeout(() => {
-      this.invalidateUser(authToken, req);
-    }, 500000);
   }
 
   addAuthenticatedUser(token, user) {
@@ -48,16 +38,13 @@ class SessionManager {
   }
 
   invalidateUser(authToken, req) {
-    if (this.timeouts[authToken]) {
-      clearTimeout(this.timeouts[authToken]);
-    }
-
+    // console.log(`Will invalidate session with token: ${authToken}`);
     const socketId = req.session.socketID;
-    // req.session.destroy();
-    req.session.authToken = null;
     socketManager.invalidateSocket(authToken, socketId);
 
     this.authenticatedUsers[authToken] = null;
+    // req.session.destroy();
+    req.session.authToken = null;
 
     db.removeSession(authToken).catch((err) => {
       console.log(err.message);

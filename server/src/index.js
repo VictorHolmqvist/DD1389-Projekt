@@ -52,8 +52,8 @@ const session = expressSession({
   secret: 'Super secret! Shh! Do not tell anyone...',
   resave: true,
   saveUninitialized: true,
-  key: 'authToken',
-  rolling: true,
+  // cookie: { maxAge: 100000 },
+  // rolling: true,
 });
 
 app.use(session);
@@ -63,6 +63,19 @@ io.use(socketIOSession(session), {
   resave: true,
 });
 
+// io.use((socket, next) => {
+//   if (socket.handshake.session) {
+//     console.log(socket.handshake.session.authToken);
+//     next();
+//   } else {
+//     next(new Error('Unathorized'));
+//   }
+//
+// })
+
+// io.use((socket, next) => {
+//   session(socket.request, socket.request.res, next);
+// })
 
 app.use(express.static(publicPath));
 

@@ -31,6 +31,9 @@ router.get('/gamehistory', async (req, res) => {
 router.get('/logout', async (req, res) => {
   if (req.session.authToken) {
     sessionManager.invalidateUser(req.session.authToken, req);
+    // req.session.destroy((err) => {
+    //   console.log(`Unable to destroy session: ${err}`);
+    // });
     res.sendStatus(200);
   } else {
     res.sendStatus(401);

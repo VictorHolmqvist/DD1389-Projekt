@@ -35,6 +35,7 @@ export default {
     return {
       lobbies: [],
       lobbyNameTF: '',
+      isInstanitated: false,
     };
   },
   computed: {
@@ -50,11 +51,13 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     console.log(`Navigated from: ${from.path} to ${to.path}`);
-    if (to.path === '/lobbybrowser' && from.path !== '/login') {
+    if (to.path === '/lobbybrowser') {
       next((vm) => {
-        vm.removeListeners();
-        vm.addListeners();
-        vm.getAllJoinable();
+        if (vm.isInstanitated) {
+          vm.removeListeners();
+          vm.addListeners();
+          vm.getAllJoinable();
+        }
       });
       next(vm => vm.getAllJoinable());
     } else {
@@ -140,6 +143,10 @@ export default {
   created() {
     this.getAllJoinable();
     this.addListeners();
+
+    setTimeout(() => {
+      this.isInstanitated = true;
+    }, 1000);
   },
 };
 </script>

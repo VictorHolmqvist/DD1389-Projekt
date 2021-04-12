@@ -38,21 +38,24 @@ Vue.config.productionTip = false;
   socket.connect('localhost:8989');
 
   socket.on('connect', () => {
+    console.error('socket connect');
     if (disconnected) {
+      disconnected = false;
       // The client has reconnected after being disconnected. Force a page reload.
       router.go(0);
     }
-    disconnected = false;
   });
 
   socket.on('disconnect', () => {
-    console.log('socket disconnect');
+    console.error('socket disconnect');
     disconnected = true;
-    socket.connect('localhost:8989');
+    setTimeout(() => {
+      socket.connect('localhost:8989');
+    }, 100);
   });
 
   socket.on('connect_error', () => {
-    console.log('connect_error');
+    console.error('connect_error');
     setTimeout(() => {
       socket.connect('localhost:8989');
     }, 5000);

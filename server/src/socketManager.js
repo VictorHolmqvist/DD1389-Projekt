@@ -1,9 +1,12 @@
 const { v4: uuidv4 } = require('uuid');
+const sessionManager = require('./sessionManager.js');
 
 class SocketManager {
   constructor() {
     this.authenticatedSockets = {};
     this.unregisteredSockets = {};
+    this.authTokenToSocketId = {};
+    this.expirationTimes = {};
   }
 
   setIo(io) {
@@ -12,6 +15,11 @@ class SocketManager {
 
   updateUserSocket(authToken, socket) {
     this.authenticatedSockets[authToken] = socket;
+    socket.join('auth');
+  }
+
+  updateExpirationTime(authToken, time) {
+    this.expirationTimes[authToken] = time;
   }
 
   addUnregisteredSocket(socket) {
@@ -22,23 +30,40 @@ class SocketManager {
 
   assignUnregisteredSocket(socketId, authToken) {
     const socket = this.unregisteredSockets[socketId];
-    this.unregisteredSockets = Object.keys(this.unregisteredSockets)
-      .filter((sockID) => sockID !== socketId)
-      .reduce((res, sockID) => ({ ...res, [sockID]: this.unregisteredSockets[sockID] }), {});
-    this.authenticatedSockets[authToken] = socket;
-    console.log('unregistered socket has been assigned to user');
+    if (socket) {
+      this.unregisteredSockets = Object.keys(this.unregisteredSockets)
+          .filter((sockID) => sockID !== socketId)
+          .reduce((res, sockID) => ({ ...res, [sockID]: this.unregisteredSockets[sockID] }), {});
+      socket.join('auth');
+      this.authenticatedSockets[authToken] = socket;
+      this.authTokenToSocketId[authToken] = socketId;
+      console.log('unregistered socket has been assigned to user');
+    } else {
+      console.log('unable to find socket');
+    }
   }
 
   emitEvent(event, message) {
     console.log(`Emit ${event}`);
-    this.io.emit(event, message);
+
+    Object.keys(this.authenticatedSockets).forEach((key) => {
+      if (!this.expirationTimes[key] || this.expirationTimes[key] < Date.now()) {
+        if (this.authenticatedSockets[key]) {
+          const socketId = this.authTokenToSocketId[key];
+          this.authenticatedSockets[key].leave('auth');
+          this.unregisteredSockets[socketId] = this.authenticatedSockets[key];
+          this.authenticatedSockets[key] = null;
+        }
+      }
+    })
+
+    this.io.in('auth').emit(event, message);
   }
 
   invalidateSocket(authToken, socketId) {
     // Move the socket to unregistered sockets
     if (this.authenticatedSockets[authToken] && socketId) {
-      // this.authenticatedSockets[authToken].handshake.session.destroy();
-      // this.authenticatedSockets[authToken].disconnect(true);
+      this.authenticatedSockets[authToken].leave('auth');
       this.unregisteredSockets[socketId] = this.authenticatedSockets[authToken];
     }
 
