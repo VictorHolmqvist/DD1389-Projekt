@@ -115,7 +115,6 @@ export default {
     },
     addListeners() {
       this.socket = this.$root.socket;
-
       this.socket.on('lobbyBrowser/new', (game) => {
         console.log('NEW GAME');
         console.log(game);
