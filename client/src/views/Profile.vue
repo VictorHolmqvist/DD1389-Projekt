@@ -142,7 +142,13 @@ export default {
       console.log(`PROFILE ID: ${this.$store.state.userId}`);
       this.socket.on(`profile-${this.$store.state.userId}/finishedGame`, (finishedGame) => {
         console.log('GAME FINISHED');
-        this.gameHistory = [...this.gameHistory, finishedGame];
+        this.activeGames.forEach((activeGame, index) => {
+          if (activeGame.gameId === finishedGame.game.id) {
+            console.log('Found game to remove');
+            this.$delete(this.activeGames, index);
+          }
+        });
+        this.gameHistory.unshift(finishedGame);
       });
     },
     removeListeners() {

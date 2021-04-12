@@ -86,9 +86,7 @@ export default {
       });
       this.socket.on(`chesslobby/${this.getGameId()}/gameOver`, () => {
         console.log('GAME OVER');
-        setTimeout(() => {
-          this.$router.push('/Profile');
-        }, 500);
+        this.$router.push('/profile');
       });
       this.socket.on(`chesslobby/${this.getGameId()}/foundOpponent`, (opponent) => {
         if (opponent.userId !== this.$store.state.userId) {
@@ -99,23 +97,27 @@ export default {
       });
     },
     giveUp() {
-      this.$http.post(`/api/chesslobby/${this.gameId}/giveUp`,
-        {
-          fen: this.sendFen,
-          gameId: this.gameId,
-          color: this.color,
-          turn: this.turn,
-          opponent: this.opponent,
-        })
-        .then((resp) => {
-          if (!resp.ok) {
-            throw new Error('Unexpected failure when sending game move');
-          } else {
-            this.$router.push('/Profile');
-          }
-        }).catch((err) => {
-          console.error(err);
-        });
+      console.log(`Opponent: ${this.opponent.userName}`);
+      if (this.opponent.userName !== null) {
+        console.log(`Opponent: ${this.opponent.userName}`);
+        this.$http.post(`/api/chesslobby/${this.gameId}/giveUp`,
+          {
+            fen: this.sendFen,
+            gameId: this.gameId,
+            color: this.color,
+            turn: this.turn,
+            opponent: this.opponent,
+          })
+          .then((resp) => {
+            if (!resp.ok) {
+              throw new Error('Unexpected failure when sending game move');
+            } else {
+              this.$router.push('/profile');
+            }
+          }).catch((err) => {
+            console.error(err);
+          });
+      }
     },
     getGameId() {
       this.gameId = this.$route.params.gameid;

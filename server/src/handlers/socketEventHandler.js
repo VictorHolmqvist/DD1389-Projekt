@@ -47,9 +47,9 @@ class SocketEventHandler {
     await db.getGameById(gameId).then((game) => {
       const finishedGame = new FinishedGameResultModel(game, winner);
       const { user1, user2 } = game;
+      socketManager.emitEvent(`chesslobby/${gameId}/gameOver`);
       socketManager.emitEvent(`profile-${user1.userId}/finishedGame`, finishedGame);
       socketManager.emitEvent(`profile-${user2.userId}/finishedGame`, finishedGame);
-      socketManager.emitEvent(`chesslobby/${gameId}/gameOver`);
     }).catch((err) => {
       console.error(err.message);
     });

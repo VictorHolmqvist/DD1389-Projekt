@@ -26,18 +26,18 @@ class Database {
 
 
     await this.db.run('CREATE TABLE IF NOT EXISTS Session '
-        + '(authToken TEXT NOT NULL, '
-        + 'userId INTEGER NOT NULL, '
-        + 'socketRoom TEXT, '
-        + 'FOREIGN KEY(userId) REFERENCES User(rowid), '
-        + 'UNIQUE(authToken))',
-    [],
-    ((err) => {
-      console.log('Created Session Table');
-      if (err) {
-        console.error(`Error creating Session Table: ${err.message}`);
-      }
-    }));
+      + '(authToken TEXT NOT NULL, '
+      + 'userId INTEGER NOT NULL, '
+      + 'socketRoom TEXT, '
+      + 'FOREIGN KEY(userId) REFERENCES User(rowid), '
+      + 'UNIQUE(authToken))',
+      [],
+      ((err) => {
+        console.log('Created Session Table');
+        if (err) {
+          console.error(`Error creating Session Table: ${err.message}`);
+        }
+      }));
 
     // Create the Game table
     await this.db.run('CREATE TABLE IF NOT EXISTS Game '
@@ -50,12 +50,12 @@ class Database {
       + 'draw INTEGER, '
       + 'winner INTEGER, '
       + 'FOREIGN KEY (user1Id, user2Id) REFERENCES User (rowid, rowid))',
-    [], (err) => {
-      console.log('Created Game table');
-      if (err) {
-        console.error(`Error creating Game Table: ${err.message}`);
-      }
-    });
+      [], (err) => {
+        console.log('Created Game table');
+        if (err) {
+          console.error(`Error creating Game Table: ${err.message}`);
+        }
+      });
   }
 
 
@@ -128,18 +128,18 @@ class Database {
           console.log(`Failed to join game with id: ${gameId} for player with id: ${userId}, err: ${err.message}`);
           reject(new Error(`Failed to join game with id: ${gameId} for player with id: ${userId}`));
         } else {
-          resolve({ status: 'OK' });
+          resolve({status: 'OK'});
         }
       });
     });
   }
 
   async getGameById(gameId) {
-    const query = `SELECT 
-        g.ROWID as gameId, 
-        name, 
-        (select name from User where User.ROWID = user1Id) as user1Name, 
-       (select name from User where user2Id) as user2Name,
+    const query = ` SELECT
+        g.ROWID as gameId,
+        name,
+        (select name from User where User.ROWID = user1Id) as user1Name,
+       (select name from User where User.ROWID = user2Id) as user2Name,
        user1Id,
        user2Id,
        currentPlayer,
@@ -158,8 +158,8 @@ class Database {
           resolve(new GameModel(
             row.gameId,
             row.name,
-            { userName: row.user1Name, userId: row.user1Id },
-            { userName: row.user2Name, userId: row.user2Id },
+            {userName: row.user1Name, userId: row.user1Id},
+            {userName: row.user2Name, userId: row.user2Id},
             row.currentPlayer,
             row.gameState,
             row.gameOver,
@@ -190,8 +190,8 @@ class Database {
             games.push(new GameModel(
               row.gameId,
               row.gameName,
-              { userId: row.user1Id, userName: row.opponentName },
-              { userId: row.user2Id, userName: row.user2Name },
+              {userId: row.user1Id, userName: row.opponentName},
+              {userId: row.user2Id, userName: row.user2Name},
               row.currentPlayer,
               row.gameState,
               row.gameOver,
@@ -215,9 +215,9 @@ class Database {
       + 'LEFT JOIN User as user1 on game.user1Id = user1.rowid '
       + 'LEFT JOIN User as user2 on game.user2Id = user2.rowid '
       + 'WHERE '
-      + 'game.user1Id = ? '
+      + '(game.user1Id = ? '
       + 'or '
-      + 'game.user2Id = ? '
+      + 'game.user2Id = ?)'
       + 'AND '
       + 'game.gameOver = 0';
     const games = [];
@@ -232,8 +232,8 @@ class Database {
           rows.forEach((row) => {
             games.push(new GameModel(row.gameId,
               row.gameName,
-              { id: row.user1Id, name: row.user1Name },
-              { id: row.user2Id, name: row.user2Name },
+              {id: row.user1Id, name: row.user1Name},
+              {id: row.user2Id, name: row.user2Name},
               row.currentPlayer,
               row.gameState,
               row.gameOver,
@@ -283,8 +283,8 @@ class Database {
 
           resolve(new GameModel(row.gameId,
             row.gameName,
-            { id: row.user1Id, name: row.user1Name },
-            { id: row.user2Id, name: row.user2Name },
+            {id: row.user1Id, name: row.user1Name},
+            {id: row.user2Id, name: row.user2Name},
             row.currentPlayer,
             row.gameState,
             row.gameOver,
@@ -324,8 +324,8 @@ class Database {
             const hej = new GameModel(
               row.rowid,
               row.name,
-              { userName: row.user1Name, userId: row.user1Id },
-              { userName: row.user2Name, userId: row.user2Id },
+              {userName: row.user1Name, userId: row.user1Id},
+              {userName: row.user2Name, userId: row.user2Id},
               row.currentPlayer,
               row.gameState,
               row.gameOver,
