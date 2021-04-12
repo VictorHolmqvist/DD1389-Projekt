@@ -109,7 +109,7 @@ export default {
           if (!resp.ok) {
             throw new Error('Unexpected failure when sending game move');
           } else {
-            this.$router.push('/Profile');
+            this.$router.push('/profile');
           }
         }).catch((err) => {
           console.error(err);
