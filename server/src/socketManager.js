@@ -1,5 +1,4 @@
 const { v4: uuidv4 } = require('uuid');
-const db = require('./database.js');
 
 class SocketManager {
   constructor() {
@@ -36,7 +35,6 @@ class SocketManager {
   }
 
   invalidateSocket(authToken, socketId) {
-
     // Move the socket to unregistered sockets
     if (this.authenticatedSockets[authToken] && socketId) {
       // this.authenticatedSockets[authToken].handshake.session.destroy();
@@ -47,7 +45,6 @@ class SocketManager {
     // Remove the socket from authenticated sockets
     this.authenticatedSockets[authToken] = null;
   }
-
 }
 
 module.exports = new SocketManager();

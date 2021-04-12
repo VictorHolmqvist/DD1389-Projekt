@@ -2,7 +2,6 @@ const express = require('express');
 const db = require('../database.js');
 const sessionManager = require('../sessionManager.js');
 const lobbyHandler = require('../handlers/lobbyHandler.js');
-const socketManager = require('../socketManager.js');
 
 const router = express.Router();
 
