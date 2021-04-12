@@ -53,10 +53,9 @@ router.post('/:gameId/giveUp', async (req, res) => {
   console.log('got a give up post!');
   const { gameId } = req.params;
   const { opponent } = req.body;
-
-
   db.userGaveUp(gameId, opponent).then(() => {
     console.log(`Successfully updated won game:${gameId}`);
+    socketEventHandler.playerWon(gameId, opponent);
     res.sendStatus(200);
   }).catch((err) => {
     console.error(`failed updating won game:${gameId} ${err}`);

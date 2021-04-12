@@ -86,9 +86,7 @@ export default {
       });
       this.socket.on(`chesslobby/${this.getGameId()}/gameOver`, () => {
         console.log('GAME OVER');
-        setTimeout(() => {
-          this.$router.push('/Profile');
-        }, 500);
+        this.$router.push('/profile');
       });
       this.socket.on(`chesslobby/${this.getGameId()}/foundOpponent`, (opponent) => {
         if (opponent.userId !== this.$store.state.userId) {
