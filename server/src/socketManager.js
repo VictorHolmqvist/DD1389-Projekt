@@ -1,5 +1,4 @@
 const { v4: uuidv4 } = require('uuid');
-const sessionManager = require('./sessionManager.js');
 
 class SocketManager {
   constructor() {
@@ -15,6 +14,7 @@ class SocketManager {
 
   updateUserSocket(authToken, socket) {
     this.authenticatedSockets[authToken] = socket;
+    this.expirationTimes[authToken] = Date.now() + 30000;
     socket.join('auth');
   }
 
@@ -32,8 +32,8 @@ class SocketManager {
     const socket = this.unregisteredSockets[socketId];
     if (socket) {
       this.unregisteredSockets = Object.keys(this.unregisteredSockets)
-          .filter((sockID) => sockID !== socketId)
-          .reduce((res, sockID) => ({ ...res, [sockID]: this.unregisteredSockets[sockID] }), {});
+        .filter((sockID) => sockID !== socketId)
+        .reduce((res, sockID) => ({ ...res, [sockID]: this.unregisteredSockets[sockID] }), {});
       socket.join('auth');
       this.authenticatedSockets[authToken] = socket;
       this.authTokenToSocketId[authToken] = socketId;
@@ -53,9 +53,10 @@ class SocketManager {
           this.authenticatedSockets[key].leave('auth');
           this.unregisteredSockets[socketId] = this.authenticatedSockets[key];
           this.authenticatedSockets[key] = null;
+          console.log('Will invalidate session with token: ');
         }
       }
-    })
+    });
 
     this.io.in('auth').emit(event, message);
   }

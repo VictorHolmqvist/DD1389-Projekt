@@ -148,7 +148,10 @@ export default {
             this.$delete(this.activeGames, index);
           }
         });
-        this.gameHistory.unshift(finishedGame);
+
+        // if (!this.gameHistory.some(g => g.game.id === finishedGame.game.id)) {
+        //   this.gameHistory.unshift(finishedGame);
+        // }
       });
     },
     removeListeners() {

@@ -27,7 +27,12 @@ Vue.config.productionTip = false;
       console.log(`HTTP INTERCEPT After: ${resp.status}`);
       if (resp.status === 401) {
         store.dispatch('unauthenticated');
-        router.push('/login');
+
+        if (!resp.url.includes('new_move')) {
+          router.push('/login');
+        } else {
+          console.log('Wont to anything');
+        }
       }
     });
   });

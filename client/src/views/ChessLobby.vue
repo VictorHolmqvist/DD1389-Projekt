@@ -3,7 +3,7 @@
   <div >
     <div class = "container">
       <div class = "information">
-        <h1>Lobby {{ gameId }}</h1>
+        <h1>Lobby {{ this.getGameId() }}</h1>
         <h2 v-if="opponent !== null"> Opponent: {{ opponent.userName }} </h2>
         <h2 v-if="opponent === null"> Opponent: </h2>
         <h3 v-if="color === 0"> You are: black </h3>
@@ -30,7 +30,6 @@ export default {
   },
   data() {
     return {
-      isInstanitated: false,
       // holds what color the cient is. The creator of the room is black
       color: null,
       opponent: null,
@@ -41,15 +40,16 @@ export default {
       loadFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       sendFen: null,
       standardFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      beforeFen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
       gameId: '',
+      isInstanitated: false,
     };
   },
   beforeRouteEnter(to, from, next) {
     console.log(`Navigated from: ${from.path} to ${to.path}`);
-    if (to.path.includes('/chesslobby/')) {
+    if (from.path !== '/') {
       next((vm) => {
         if (vm.isInstanitated) {
-          console.log('this listen for move = false');
           vm.removeListeners();
           vm.addListeners();
           vm.getGameState();
@@ -58,16 +58,6 @@ export default {
     } else {
       next();
     }
-  },
-  mounted() {
-    this.getGameState().then(() => {
-      setTimeout(() => {
-        this.isInstanitated = true;
-      }, 10000);
-    }).catch(console.error);
-  },
-  created() {
-    this.addListeners();
   },
   methods: {
     removeListeners() {
@@ -100,10 +90,10 @@ export default {
       console.log(`Opponent: ${this.opponent.userName}`);
       if (this.opponent.userName !== null) {
         console.log(`Opponent: ${this.opponent.userName}`);
-        this.$http.post(`/api/chesslobby/${this.gameId}/giveUp`,
+        this.$http.post(`/api/chesslobby/${this.getGameId()}/giveUp`,
           {
             fen: this.sendFen,
-            gameId: this.gameId,
+            gameId: this.getGameId(),
             color: this.color,
             turn: this.turn,
             opponent: this.opponent,
@@ -125,9 +115,8 @@ export default {
     },
     getGameState() {
       console.log('getGameState');
-      this.getGameId();
       return new Promise((resolve, reject) => {
-        this.$http.get(`api/chesslobby/${this.gameId}`)
+        this.$http.get(`api/chesslobby/${this.getGameId()}`)
           .then((resp) => {
             if (!resp.ok) {
               throw new Error('Unexpected failure when loading game data');
@@ -163,6 +152,7 @@ export default {
       // STRING fen = exempel: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
       // fen håller game state och skickas mellan klient och server när drag genomförs
       this.loadFen = game.gameState;
+      this.beforeFen = game.gameState;
 
       if (this.turn === this.color) {
         this.setClickable();
@@ -178,6 +168,7 @@ export default {
       if (this.loadFen !== game.gameState) {
         this.loadFen = game.gameState;
       }
+      this.beforeFen = game.gameState;
       // STRING opponent. Håller clientens motståndare.
       if (this.color === black) {
         this.opponent = game.user2;
@@ -198,20 +189,26 @@ export default {
         this.sendFen = data.fen;
         this.setNotClickable();
 
-        this.$http.post(`/api/chesslobby/${this.gameId}/new_move`,
+        this.$http.post(`/api/chesslobby/${this.getGameId()}/new_move`,
           {
             fen: this.sendFen,
-            gameId: this.gameId,
+            gameId: this.getGameId(),
             color: this.color,
             turn: this.turn,
             opponent: this.opponent,
           }).then((resp) => {
           if (!resp.ok) {
+            console.log('Failed posting game move');
+            this.loadFen = this.beforeFen;
+            this.$router.push('/profile');
             throw new Error('Unexpected failure when sending game move');
           } else {
             console.log('Successfully sent game move');
           }
         }).catch((err) => {
+          console.log('Failed posting game move');
+          this.loadFen = this.beforeFen;
+          this.$router.push('/login');
           console.error(err);
         });
       }
@@ -227,6 +224,15 @@ export default {
     loadFromFen() {
       this.loadFen = this.sendFen;
     },
+  },
+  mounted() {
+    setTimeout(() => {
+      this.isInstanitated = true;
+    }, 500);
+
+    this.removeListeners();
+    this.addListeners();
+    this.getGameState();
   },
 };
 </script>
