@@ -9,25 +9,31 @@ export default new Vuex.Store({
   state: {
     isAuthenticated: false,
     username: '',
+    userId: undefined,
   },
   mutations: {
-    setIsAuthenticated(state, isAuthenticated) {
-      state.isAuthenticated = isAuthenticated;
-      console.log(`setIsAuthenticated: ${isAuthenticated}`);
+    setIsAuthenticated(state, data) {
+      state.isAuthenticated = data.isAuthenticated;
+      state.username = data.username;
+      state.userId = data.userId;
+      console.log(`setIsAuthenticated: ${data.isAuthenticated}`);
     },
     authSuccess(state, resp) {
       console.log(`authSuccess: ${resp}`);
       state.isAuthenticated = true;
       state.username = resp.username;
+      state.userId = resp.userId;
     },
     authFailed(state) {
       console.log('authFailed');
       state.isAuthenticated = false;
       state.username = '';
+      state.userId = undefined;
     },
     logout(state) {
       state.isAuthenticated = false;
       state.username = '';
+      state.userId = undefined;
     },
   },
   actions: {
@@ -44,12 +50,15 @@ export default new Vuex.Store({
             password: user.password,
           }),
         }).then((resp) => {
-          console.log('login: then');
           if (!resp.ok) {
             commit('authFailed');
             reject();
-          } else {
-            commit('authSuccess', resp.json());
+            return null;
+          }
+          return resp.json();
+        }).then((data) => {
+          if (data) {
+            commit('authSuccess', data);
             resolve();
           }
         }).catch((err) => {

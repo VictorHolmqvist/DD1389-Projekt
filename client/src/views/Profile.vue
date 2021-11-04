@@ -1,12 +1,9 @@
 <template>
   <div class="container">
-    <h1>Profile</h1>
-    <p>Page where users can view their match history, see their active games and logout</p>
-    <p>Users that are not logged in will be redirected to /login</p>
-    <button class="red-button" v-on:click="logout()">Logout</button>
-
+    <h1>Profile: {{this.$store.state.username}}</h1>
     <h2>Active games</h2>
-    <div class="row">
+    <h4 v-if="activeEmpty">You have currently no active games.</h4>
+    <div v-if="!activeEmpty" class="row">
       <div class="well" v-for="game in activeGames" v-bind:key="game.gameId">
         <div class="row" style="text-align: center;">
           <h1>Game {{game.gameName}}</h1>
@@ -17,14 +14,24 @@
           <p>My Turn: {{game.myTurn}}</p>
           <button v-on:click="joinGame(game.gameId)">Join Game</button>
           <div class = "boardPreview" >
-            <chessboard :fen="fen" id = "board "/>
+            <chessboard :fen="game.gameState" id = "board "/>
           </div>
         </div>
       </div>
     </div>
 
     <h2>Game history</h2>
-
+    <h4 v-if="historyEmpty">You have currently no history of games.</h4>
+    <div v-if="!historyEmpty" class="row">
+      <div class="well" v-for="finishedGame in gameHistory" v-bind:key="finishedGame.game.gameId">
+        <div class="row" style="text-align: center;">
+          <h1>Game: {{finishedGame.game.name}}</h1>
+          <p>
+            <span>Winner: {{ finishedGame.winner.userName}}</span>
+          </p>
+        </div>
+      </div>
+    </div>
   </div>
 
 </template>
@@ -37,6 +44,26 @@ export default {
     chessboard,
   },
   name: 'Profile',
+  computed: {
+    activeEmpty: function ae() {
+      if (!this.activeGames) {
+        return true;
+      }
+      if (this.activeGames.length === 0) {
+        return true;
+      }
+      return false;
+    },
+    historyEmpty: function he() {
+      if (!this.gameHistory) {
+        return true;
+      }
+      if (this.gameHistory.length === 0) {
+        return true;
+      }
+      return false;
+    },
+  },
   data() {
     return {
       activeGames: [],
@@ -50,6 +77,8 @@ export default {
     if (to.path === '/profile') {
       next((vm) => {
         if (vm.isInstanitated) {
+          vm.removeListeners();
+          vm.addListeners();
           vm.getActiveGames();
           vm.getGameHistory();
         }
@@ -68,14 +97,14 @@ export default {
           }
           return resp.json();
         })
-        .catch(console.error)
         .then((data) => {
-          this.activeGames = data.list;
-        });
+          if (data && data.list) {
+            this.activeGames = data.list;
+          }
+        }).catch(console.error);
     },
     getGameHistory() {
       console.log('getGameHistory');
-
       this.$http.get('/api/profile/gamehistory')
         .then((resp) => {
           if (!resp.ok) {
@@ -83,11 +112,11 @@ export default {
           }
           return resp.json();
         })
-        .catch(console.error)
         .then((data) => {
-          console.log(data.list);
-          this.gameHistory = data.list;
-        });
+          if (data && data.list) {
+            this.gameHistory = data.list;
+          }
+        }).catch(console.error);
     },
     joinGame(id) {
       this.$http.post('/api/lobby/joingame', { gameId: id })
@@ -99,28 +128,40 @@ export default {
           }
         });
     },
-    logout() {
-      this.$store.dispatch('logout').then(() => {
-        this.$router.push('/login');
-      }).catch((err) => {
-        console.log(`Error logging out: ${err.message}`);
+    addListeners() {
+      this.socket = this.$root.socket;
+      this.socket.on(`profile-${this.$store.state.userId}/update`, (updatedGame) => {
+        console.log('GAME UPDATED');
+        this.activeGames.forEach((activeGame, index) => {
+          if (activeGame.gameId === updatedGame.gameId) {
+            console.log('Found game to update');
+            this.$set(this.activeGames, index, updatedGame);
+          }
+        });
       });
+      console.log(`PROFILE ID: ${this.$store.state.userId}`);
+      this.socket.on(`profile-${this.$store.state.userId}/finishedGame`, (finishedGame) => {
+        console.log('GAME FINISHED');
+        this.activeGames.forEach((activeGame, index) => {
+          if (activeGame.gameId === finishedGame.game.id) {
+            console.log('Found game to remove');
+            this.$delete(this.activeGames, index);
+          }
+        });
+
+        // if (!this.gameHistory.some(g => g.game.id === finishedGame.game.id)) {
+        //   this.gameHistory.unshift(finishedGame);
+        // }
+      });
+    },
+    removeListeners() {
+      this.$root.socket.removeAllListeners();
     },
   },
   created() {
     this.getActiveGames();
     this.getGameHistory();
-
-    this.socket = this.$root.socket;
-    this.socket.on('update', (updatedGame) => {
-      console.log('GAME UPDATED');
-      this.activeGames.forEach((activeGame, index) => {
-        if (activeGame.gameId === updatedGame.gameId) {
-          console.log('Found game to update');
-          this.$set(this.activeGames, index, updatedGame);
-        }
-      });
-    });
+    this.addListeners();
 
     setTimeout(() => {
       this.isInstanitated = true;

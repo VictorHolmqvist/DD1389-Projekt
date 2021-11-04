@@ -1,10 +1,9 @@
 
 class FinishedGameResultModel {
-    constructor(gameId, opponentName, result) {
-        this.gameId = gameId;
-        this.opponentName = opponentName;
-        this.result = result;
-    }
+  constructor(game, winner) {
+    this.game = game;
+    this.winner = winner;
+  }
 }
 
 module.exports = FinishedGameResultModel;

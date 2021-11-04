@@ -9,7 +9,7 @@
         <div class="row" style="text-align: center;">
           <h1>{{lobby.gameName}}</h1>
           <p>GameId: {{lobby.gameId}}</p>
-          <p>Opponent: {{ lobby.opponentName }}</p>
+          <p>Opponent: {{ lobby.opponent.userName }}</p>
           <button v-on:click="joinGame(lobby.gameId)">Join Game</button>
         </div>
       </div>
@@ -35,6 +35,7 @@ export default {
     return {
       lobbies: [],
       lobbyNameTF: '',
+      isInstanitated: false,
     };
   },
   computed: {
@@ -50,7 +51,14 @@ export default {
   },
   beforeRouteEnter(to, from, next) {
     console.log(`Navigated from: ${from.path} to ${to.path}`);
-    if (to.path === '/lobbybrowser' && from.path !== '/login') {
+    if (to.path === '/lobbybrowser') {
+      next((vm) => {
+        if (vm.isInstanitated) {
+          vm.removeListeners();
+          vm.addListeners();
+          vm.getAllJoinable();
+        }
+      });
       next(vm => vm.getAllJoinable());
     } else {
       next();
@@ -65,6 +73,9 @@ export default {
       this.lobbyNameTF = '';
     },
     createGame() {
+      if (!this.lobbyNameTF) {
+        this.lobbyNameTF = 'New Game';
+      }
       this.$http.post('/api/lobby/creategame', { lobbyName: this.lobbyNameTF })
         .then((resp) => {
           if (resp.status === 200) {
@@ -105,24 +116,36 @@ export default {
         console.log(`LobbyBrowser: failed loading joinable games: ${err.message}, ${err.status}`);
       });
     },
+    addListeners() {
+      this.socket = this.$root.socket;
+      this.socket.on('lobbyBrowser/new', (game) => {
+        console.log('NEW GAME');
+        console.log(game);
+        if (game.opponent.userId !== this.$store.state.userId) {
+          this.lobbies = [...this.lobbies, game];
+        }
+      });
+
+      this.socket.on('lobbyBrowser/removed', (gameId) => {
+        console.log('REMOVED');
+        this.lobbies.forEach((game, index) => {
+          if (game.gameId === gameId) {
+            this.lobbies.splice(index, 1);
+          }
+        });
+      });
+    },
+    removeListeners() {
+      this.$root.socket.removeAllListeners();
+    },
   },
   created() {
     this.getAllJoinable();
-    this.socket = this.$root.socket;
+    this.addListeners();
 
-    this.socket.on('new', (game) => {
-      console.log('NEW GAME');
-      this.lobbies = [...this.lobbies, game];
-    });
-
-    this.socket.on('removed', (gameId) => {
-      console.log('REMOVED');
-      this.lobbies.forEach((game, index) => {
-        if (game.gameId === gameId) {
-          this.lobbies.splice(index, 1);
-        }
-      });
-    });
+    setTimeout(() => {
+      this.isInstanitated = true;
+    }, 1000);
   },
 };
 </script>

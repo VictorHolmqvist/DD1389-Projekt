@@ -1,70 +1,76 @@
 const { v4: uuidv4 } = require('uuid');
 
-
 class SocketManager {
+  constructor() {
+    this.authenticatedSockets = {};
+    this.unregisteredSockets = {};
+    this.authTokenToSocketId = {};
+    this.expirationTimes = {};
+  }
 
-    constructor() {
-        this.authenticatedSockets = {}
-        this.unregisteredSockets = {}
-        this.socketRooms = {} //Keeps track of what rooms each socket has joined
+  setIo(io) {
+    this.io = io;
+  }
+
+  updateUserSocket(authToken, socket) {
+    this.authenticatedSockets[authToken] = socket;
+    this.expirationTimes[authToken] = Date.now() + 30000;
+    socket.join('auth');
+  }
+
+  updateExpirationTime(authToken, time) {
+    this.expirationTimes[authToken] = time;
+  }
+
+  addUnregisteredSocket(socket) {
+    const socketID = uuidv4();
+    this.unregisteredSockets[socketID] = socket;
+    return socketID;
+  }
+
+  assignUnregisteredSocket(socketId, authToken) {
+    const socket = this.unregisteredSockets[socketId];
+    if (socket) {
+      this.unregisteredSockets = Object.keys(this.unregisteredSockets)
+        .filter((sockID) => sockID !== socketId)
+        .reduce((res, sockID) => ({ ...res, [sockID]: this.unregisteredSockets[sockID] }), {});
+      socket.join('auth');
+      this.authenticatedSockets[authToken] = socket;
+      this.authTokenToSocketId[authToken] = socketId;
+      console.log('unregistered socket has been assigned to user');
+    } else {
+      console.log('unable to find socket');
     }
+  }
 
-    setIo(io) {
-        this.io = io
-    }
+  emitEvent(event, message) {
+    console.log(`Emit ${event}`);
 
-    updateUserSocket(authToken, socket) {
-        this.authenticatedSockets[authToken] = socket;
-    }
-
-    addUnregisteredSocket(socket) {
-        const socketID = uuidv4();
-        this.unregisteredSockets[socketID] = socket;
-        return socketID;
-    }
-
-    assignUnregisteredSocket(socketId, authToken) {
-        const socket = this.unregisteredSockets[socketId];
-        this.unregisteredSockets = Object.keys(this.unregisteredSockets)
-            .filter((sockID) => sockID !== socketId)
-            .reduce((res, sockID) => ({ ...res, [sockID]: this.unregisteredSockets[sockID] }), {});
-        this.authenticatedSockets[authToken] = socket;
-        console.log('unregistered socket has been assigned to user');
-    }
-
-    emitEvent(room, event, message) {
-        this.io.in(room).emit(event, message);
-    }
-
-    joinRoom(room, authToken) {
-        this.leaveAllRooms(authToken);
-        if (this.authenticatedSockets[authToken]) {
-            this.authenticatedSockets[authToken].join(room)
-            try {
-                this.socketRooms[authToken].push(room);
-                console.log(`authToken: ${authToken} has joined room: ${room}`);
-            } catch(e) {
-                this.socketRooms[authToken] = [room];
-                console.log(`authToken: ${authToken} has joined room: ${room}`);
-            }
-        } else {
-            console.log(`No authenticated socket for token: ${authToken}. Can't join room ${room}`);
+    Object.keys(this.authenticatedSockets).forEach((key) => {
+      if (!this.expirationTimes[key] || this.expirationTimes[key] < Date.now()) {
+        if (this.authenticatedSockets[key]) {
+          const socketId = this.authTokenToSocketId[key];
+          this.authenticatedSockets[key].leave('auth');
+          this.unregisteredSockets[socketId] = this.authenticatedSockets[key];
+          this.authenticatedSockets[key] = null;
+          console.log('Will invalidate session with token: ');
         }
+      }
+    });
+
+    this.io.in('auth').emit(event, message);
+  }
+
+  invalidateSocket(authToken, socketId) {
+    // Move the socket to unregistered sockets
+    if (this.authenticatedSockets[authToken] && socketId) {
+      this.authenticatedSockets[authToken].leave('auth');
+      this.unregisteredSockets[socketId] = this.authenticatedSockets[authToken];
     }
 
-    leaveAllRooms(authToken) {
-        if (this.authenticatedSockets[authToken]) {
-            const rooms = this.socketRooms[authToken]
-            if (rooms) {
-                rooms.forEach((room) => {
-                    console.log(`authToken: ${authToken} has left room: ${room}`);
-                    this.authenticatedSockets[authToken].leave(room);
-                });
-                this.socketRooms[authToken] = [];
-            }
-        }
-    }
-
+    // Remove the socket from authenticated sockets
+    this.authenticatedSockets[authToken] = null;
+  }
 }
 
 module.exports = new SocketManager();
